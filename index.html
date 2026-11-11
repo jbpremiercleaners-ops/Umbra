@@ -210,6 +210,7 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
 .np-prompt{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ember);min-height:1em}
 .np-prompt.live{animation:pulse-t 1.1s ease-in-out infinite}
 @keyframes pulse-t{50%{opacity:.35}}
+.np-level{height:6px;max-width:260px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.np-level i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6d0c15,#ff5866);transition:width .08s}
 .np-grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .np-grade[hidden]{display:none}
 .np-grade button{height:78px;border-radius:18px;font:700 18px var(--f-body);border:1px solid var(--line-2);background:rgba(255,255,255,.05)}
@@ -275,6 +276,7 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
     <p class="np-cap" id="np-cap"></p>
     <p class="np-heard" id="np-heard"></p>
     <p class="np-prompt" id="np-prompt"></p>
+    <div class="np-level" aria-hidden="true"><i id="np-lv"></i></div>
   </div>
   <div class="np-grade" id="np-grade" hidden><button data-g="0">Missed it</button><button data-g="1">Got it</button></div>
   <div class="np-ctl">
@@ -682,25 +684,43 @@ function encodeWav(chunks,sr){
 const Rec={denied:false,abort:null,
   ok(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false&&!this.denied},
   async capture(o={}){
-    const ctx=Aud.get();if(!ctx)return null;try{await ctx.resume()}catch(e){}
+    const ctx=Aud.get();if(!ctx)return null;
     session('play-and-record');let stream;
     try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
     catch(e){session('playback');if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){this.denied=true;status();toast('Microphone',"Safari blocked the mic. Settings › Apps › Safari › Microphone › Allow, then reload.")}return null}
+    try{await ctx.resume()}catch(e){}
+    await sleep(150);
+    if(ctx.state!=='running')return this.recordFallback(stream,o);
     const src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),sink=ctx.createGain();sink.gain.value=0;src.connect(proc);proc.connect(sink);sink.connect(ctx.destination);
-    const sr=ctx.sampleRate,chunks=[],pre=[];let noise=0,nCal=0,cal=true,speech=0,silent=0,started=false,t0=performance.now(),finished=false;
+    const sr=ctx.sampleRate,chunks=[],all=[],pre=[];let noise=0,nCal=0,cal=true,speech=0,silent=0,started=false,peak=0,ticks=0,t0=performance.now(),finished=false;
     return await new Promise(resolve=>{
-      const done=keep=>{if(finished)return;finished=true;clearInterval(guard);try{proc.onaudioprocess=null;src.disconnect();proc.disconnect();sink.disconnect()}catch(e){}stream.getTracks().forEach(t=>t.stop());session('playback');this.abort=null;o.onState&&o.onState('idle');resolve(keep&&started&&chunks.length?encodeWav(chunks,sr):null)};
+      const cleanup=()=>{clearInterval(guard);try{proc.onaudioprocess=null;src.disconnect();proc.disconnect();sink.disconnect()}catch(e){}};
+      const done=keep=>{if(finished)return;finished=true;cleanup();stream.getTracks().forEach(t=>t.stop());session('playback');this.abort=null;NP.level(0);o.onState&&o.onState('idle');
+        let out=null;if(keep){if(started&&chunks.length)out=encodeWav(chunks,sr);else if(all.length&&peak>Math.max(0.004,noise*1.4))out=encodeWav(all,sr)}resolve(out)};
       this.abort=()=>done(true);
       proc.onaudioprocess=ev=>{
-        const d=ev.inputBuffer.getChannelData(0),c=new Float32Array(d);let s=0;for(let i=0;i<d.length;i++)s+=d[i]*d[i];const rms=Math.sqrt(s/d.length),ms=d.length/sr*1000;
-        Field.level(rms*5);
-        if(cal){noise+=rms;nCal++;pre.push(c);if(nCal>=3){noise/=nCal;cal=false}return}
-        const thr=Math.max(0.011,noise*2.6);
-        if(!started){pre.push(c);if(pre.length>4)pre.shift();if(rms>thr){speech+=ms;if(speech>=170){started=true;chunks.push(...pre);o.onState&&o.onState('speaking')}}else{speech=Math.max(0,speech-ms);noise=noise*0.97+rms*0.03}return}
-        chunks.push(c);if(rms>thr*0.75)silent=0;else{silent+=ms;if(silent>=(o.endSilence||1700))done(true)}
+        ticks++;const d=ev.inputBuffer.getChannelData(0),c=new Float32Array(d);let s2=0;for(let i=0;i<d.length;i++)s2+=d[i]*d[i];const rms=Math.sqrt(s2/d.length),ms=d.length/sr*1000;
+        Field.level(rms*6);NP.level(rms);if(all.length<700)all.push(c);
+        if(cal){noise+=rms;nCal++;pre.push(c);if(nCal>=2){noise/=nCal;cal=false}return}
+        peak=Math.max(peak,rms);const thr=Math.max(0.007,noise*1.9);
+        if(!started){pre.push(c);if(pre.length>5)pre.shift();if(rms>thr){speech+=ms;if(speech>=120){started=true;chunks.push(...pre);o.onState&&o.onState('speaking')}}else{speech=Math.max(0,speech-ms);noise=noise*0.97+rms*0.03}return}
+        chunks.push(c);if(rms>thr*0.7)silent=0;else{silent+=ms;if(silent>=(o.endSilence||1600))done(true)}
       };
-      const guard=setInterval(()=>{const el=performance.now()-t0;if(!started&&el>(o.maxWait||12000))done(false);if(started&&el>(o.maxLen||50000))done(true)},150);
+      const guard=setInterval(async()=>{const el=performance.now()-t0;
+        if(ticks===0&&el>1300&&!finished){finished=true;cleanup();this.abort=null;resolve(await this.recordFallback(stream,o));return}
+        if(!started&&el>(o.maxWait||12000))done(true);if(started&&el>(o.maxLen||50000))done(true)},150);
       o.onState&&o.onState('listening');
+    });
+  },
+  recordFallback(stream,o){
+    return new Promise(resolve=>{let mr,chunks=[];
+      try{mr=new MediaRecorder(stream)}catch(e){stream.getTracks().forEach(t=>t.stop());session('playback');return resolve(null)}
+      o.onState&&o.onState('fixed');
+      mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+      mr.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());session('playback');this.abort=null;o.onState&&o.onState('idle');
+        try{const buf=await new Blob(chunks,{type:mr.mimeType||'audio/mp4'}).arrayBuffer();const ctx=Aud.get();const ab=await new Promise((res,rej)=>ctx.decodeAudioData(buf,res,rej));resolve(encodeWav([ab.getChannelData(0)],ab.sampleRate))}catch(e){resolve(null)}};
+      mr.start();this.abort=()=>{if(mr.state!=='inactive')mr.stop()};
+      setTimeout(()=>{if(mr.state!=='inactive')mr.stop()},o.fixedLen||10000);
     });
   },
   stop(){this.abort&&this.abort()}
@@ -1010,7 +1030,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
   start(o){
     if(this.on)return;Voice.unlock();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
     this.o=o;this.on=true;this.i=0;this.tok++;this.paused=false;this.replay=false;this.genN=0;this.started=now();this.ev0=answers().length;
-    this.q=buildPlan(o);NP.open(o.mode);wake(true);const d=$('[data-go=transit]',$('#dock'));if(d){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce')}
+    this.q=buildPlan(o);NP.open(o.mode);wake(true);if(earMode()==='none')toast('Ears off',S.set.key?(Rec.denied?'Mic blocked: Settings › Apps › Safari › Microphone › Allow, then reload.':'Gemini key missing or paused. Check the gear icon.'):'Add the Gemini key on Transit so Ambrose can hear you.');const d=$('[data-go=transit]',$('#dock'));if(d){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce')}
     this.run();
   },
   async run(){
@@ -1031,7 +1051,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
     const chk=()=>tok===this.tok&&this.on;
     if(mode==='rec'){
       NP.prompt('Listening…',true);this.listening=true;
-      const wav=await Rec.capture({maxWait,onState:s=>{if(s==='speaking')NP.prompt('Hearing you… (tap when done)',true)}});
+      const wav=await Rec.capture({maxWait,fixedLen:Math.min(maxWait,14000),onState:s=>{if(s==='speaking')NP.prompt('Hearing you… tap when done',true);if(s==='fixed')NP.prompt('Speak now… tap when done',true)}});
       this.listening=false;NP.prompt('');if(!chk())return null;return wav?{wav}:null;
     }
     if(WebRec.needTap){const ok=await this.waitTap(tok,maxWait);if(!ok)return null}
@@ -1091,7 +1111,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
         await say((attempt?'Again. ':pick(['Question.','Tell me.',"Here's one.",'Go on then.'])+' ')+c.q);
         if(earMode()==='none'){await say(pick(['Answer out loud.','Say it out loud.','Out loud. Go.']));NP.prompt('Think…',true);await wait(S.set.think*1000);NP.prompt('');break}
         const h=await this.hear(tok,S.set.think*1000+8000);chk();
-        if(!h)break;
+        if(!h){await say("I didn't hear you. Here it is.");break}
         let g,cmd='none';
         NP.prompt('Ambrose is weighing that…',true);
         if(h.wav){try{const r=await gradeAudio(c,h.wav);chk();NP.heard(r.heard||'');cmd=String(r.command||'none');g={score:clamp(+r.score||0,0,1),say:String(r.say||''),fact:String(r.fact||''),heard:String(r.heard||'')};if(!g.heard&&cmd==='none'){NP.prompt('');await say(pick(["I didn't catch that.","Road noise. I lost you."]));break}}
@@ -1116,7 +1136,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
       for(let attempt=0;attempt<3;attempt++){
         await say((attempt?'Again. ':'')+seg.q);if(!attempt)rememberAsked(seg.q);
         if(earMode()==='none')break;
-        const h=await this.hear(tok,22000);chk();if(!h)break;
+        const h=await this.hear(tok,22000);chk();if(!h){await say("I didn't hear anything. Speak up, nearer the phone. I'll ask again later.");if(!S.unans.some(u=>u.q===seg.q))S.unans.push({id:uid(),q:seg.q,t:now()});touch('s');return}
         NP.prompt('Ambrose is filing that…',true);let r;
         if(h.wav){try{r=await absorbAudio(seg.q,h.wav);chk();NP.heard(r.heard)}catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I couldn't make that out. I'll ask again later.");break}
           if(!r.heard&&r.command==='none'){NP.prompt('');await say("I didn't catch that.");break}}
@@ -1170,7 +1190,8 @@ const NP={iv:null,t0:0,
   promptText(){const p=$('#np-prompt');return p?p.textContent:''},
   progress(i,n,inf){$('#np-bar').style.width=inf?'100%':Math.round(100*i/Math.max(1,n))+'%'},
   paused(b){$('#np-pp').innerHTML=b?'<path d="M7 5l12 7-12 7z"/>':'<path d="M8 5v14M16 5v14"/>';if(b)this.prompt('Paused. Tap to resume');else if(this.promptText().indexOf('Paused')===0)this.prompt('')},
-  grade(b){$('#np-grade').hidden=!b}
+  grade(b){$('#np-grade').hidden=!b},
+  level(v){const e=$('#np-lv');if(e)e.style.width=Math.min(100,Math.round(v*900))+'%'}
 };
 
 /* ================= EXPORT ================= */
@@ -1321,7 +1342,8 @@ function curIQ(){if(!S.curIQ){S.curIQ=S.iqQ.shift()||interviewQs(1)[0]||SEED_IQ[
 const micBtn=id=>canDictate()?`<button class="btn" data-act="mic" data-target="${id}">${MIC} Speak</button>`:'';
 function aInterview(){
   const q=curIQ();
-  return `<div class="card hot"><p class="eyebrow">Ambrose asks</p><p class="q-big" style="margin-top:8px">${esc(q)}</p>
+  return `<button class="btn red full" style="min-height:56px;font-size:16px" data-act="deepscan">${MIC} Talk to Ambrose out loud</button><p class="small muted">Two-way voice: he asks, you answer out loud, he follows up. Say stop when you're done. Below is the typed version.</p>
+<div class="card hot"><p class="eyebrow">Ambrose asks</p><p class="q-big" style="margin-top:8px">${esc(q)}</p>
 <label class="lab" for="iq-ans" style="margin-top:12px">Type it, or tap Speak</label><textarea id="iq-ans" placeholder="Say it how you'd say it out loud."></textarea>
 <div class="row" style="margin-top:8px">${micBtn('iq-ans')}<button class="btn red grow" data-act="iq-send">Give it to Ambrose</button><button class="btn ghost" data-act="iq-skip">Skip</button></div>
 ${S.lastReact?`<p style="margin-top:12px;font-style:italic;color:#e9c9cc">${esc(S.lastReact)}</p>`:''}</div>
@@ -1488,7 +1510,7 @@ async function act(a,el){
   case 'test-ear':{const out=$('#ear-test');const m=earMode();if(m==='none'){if(out)out.textContent='No way to listen on this page yet. Add the key, or open it in a Safari tab.';break}
     Aud.unlock();if(out)out.textContent='Say something…';
     if(m==='web'){const t=await WebRec.listen({maxWait:8000,fromTap:true,onHeard:x=>{if(out)out.textContent='Heard: '+x}});if(out)out.textContent=t?'Heard: “'+t+'”. Ambrose can hear you.':"Heard nothing. Check Siri & Dictation is on, and Safari's microphone permission."}
-    else{const wav=await Rec.capture({maxWait:8000});if(!wav){if(out)out.textContent=Rec.denied?'Microphone blocked. Settings › Apps › Safari › Microphone › Allow.':'Heard nothing. Speak a little louder.';break}
+    else{const wav=await Rec.capture({maxWait:8000,fixedLen:6000,onState:s=>{if(out&&s==='speaking')out.textContent='Hearing you… keep going, then stop';if(out&&s==='fixed')out.textContent='Recording 6 seconds… say something'}});if(!wav){if(out)out.textContent=Rec.denied?'Microphone blocked. Settings › Apps › Safari › Microphone › Allow.':'Heard nothing. Speak a little louder.';break}
       if(out)out.textContent='Got it, transcribing…';try{const r=await Gem.json('Transcribe the attached recording verbatim. Reply with only JSON: {"text":"…"}',{audio:wav});if(out)out.textContent='Heard: “'+String(r&&r.text||'')+'”. Ambrose can hear you.'}catch(e){handleAIErr(e);if(out)out.textContent='Recorded fine, but Gemini didn\'t answer. Check the key.'}}
     break}
   case 'reset':if(!resetArmed){resetArmed=true;openSheet('settings',vSettings(),true);break}
