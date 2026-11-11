@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Umbra</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Umbra">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#000000;
+  --glass:rgba(12,6,8,.64);
+  --glass-2:rgba(32,12,16,.55);
+  --line:rgba(255,232,232,.08);
+  --line-2:rgba(255,232,232,.15);
+  --blood:#7a0e18;
+  --ember:#c42330;
+  --wine:#2c060b;
+  --bone:#efe8e7;
+  --ash:#a69a9c;
+  --dim:#685c5f;
+  --ok:#6fb393;
+  --warn:#d8a24c;
+  --f-dot:"Doto","JetBrains Mono",ui-monospace,monospace;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  color-scheme:dark;
+  /* layout: one floating macOS-style glass window over a living field of dark-red dots; the dock is the navigation */
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--void);color:var(--bone);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+#field{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+.app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+
+/* menu bar */
+.menubar{flex:none;height:30px;display:flex;align-items:center;gap:16px;padding:0 max(12px,env(safe-area-inset-left));background:rgba(6,3,4,.6);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+.sigil{width:15px;height:15px;display:block}
+.brand{font-weight:700;letter-spacing:.01em}
+.mi{color:var(--ash);border:0;background:none;padding:0;font-size:13px}
+.mi.on{color:var(--bone)}
+.mb-right{margin-left:auto;display:flex;align-items:center;gap:11px;font-family:var(--f-mono);font-size:10.5px;color:var(--ash);letter-spacing:.06em}
+.st{display:flex;align-items:center;gap:5px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--dim);display:block}
+.sdot.on{background:var(--ember);box-shadow:0 0 8px rgba(196,35,48,.9)}
+.sdot.half{background:var(--warn)}
+.gear{border:0;background:none;padding:4px;display:grid;place-items:center;color:var(--ash)}
+.gear svg{width:15px;height:15px}
+@media (max-width:460px){.mi{display:none}.mi.on{display:inline}}
+
+/* window */
+.stage{flex:1;min-height:0;display:flex;justify-content:center;padding:10px 10px calc(86px + env(safe-area-inset-bottom))}
+.window{width:100%;max-width:540px;display:flex;flex-direction:column;background:var(--glass);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);box-shadow:0 30px 90px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden}
+.titlebar{flex:none;height:38px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid var(--line);position:relative;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.lights{display:flex;gap:8px;position:relative;z-index:1}
+.lights i{width:12px;height:12px;border-radius:50%;display:block;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.4)}
+.lights i:nth-child(1){background:#c42330}
+.lights i:nth-child(2){background:#7d1620}
+.lights i:nth-child(3){background:#45101a}
+.lights i[role=button]{cursor:pointer}
+.ttl{position:absolute;left:0;right:0;text-align:center;font-family:var(--f-mono);font-size:11.5px;color:var(--ash);letter-spacing:.05em;pointer-events:none}
+.view{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 30px;overscroll-behavior:contain}
+.view > * + *{margin-top:16px}
+
+/* dock */
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:8px;padding:8px 10px 10px;background:rgba(24,10,13,.5);border:1px solid var(--line-2);border-radius:22px;backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.dock button{width:54px;height:54px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(160deg,#311318 0%,#13070a 70%);display:grid;place-items:center;position:relative;transition:transform .22s cubic-bezier(.3,1.7,.5,1)}
+.dock button:active{transform:translateY(-9px) scale(1.14)}
+.dock button.on::after{content:"";position:absolute;bottom:-7px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--bone)}
+.dock svg{width:26px;height:26px;fill:none;stroke:var(--bone);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dock .lbl{position:absolute;bottom:-1px;font-size:0}
+.bounce{animation:bounce 1s cubic-bezier(.3,0,.3,1) 2}
+@keyframes bounce{0%,100%{transform:none}30%{transform:translateY(-16px)}55%{transform:none}75%{transform:translateY(-6px)}}
+
+/* type */
+.eyebrow{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash);margin:0}
+.dot-h{font-family:var(--f-dot);font-weight:900;letter-spacing:.01em;line-height:1.05;margin:0;text-wrap:balance}
+h1.dot-h{font-size:clamp(30px,9vw,40px)}
+h2.dot-h{font-size:24px}
+h3{font-size:16px;margin:0;font-weight:650;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--ash)}
+.small{font-size:13px}
+.mono{font-family:var(--f-mono)}
+.num{font-variant-numeric:tabular-nums}
+.stack > * + *{margin-top:10px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+/* surfaces */
+.card{background:var(--glass-2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card.hot{border-color:rgba(196,35,48,.5);box-shadow:0 0 30px rgba(196,35,48,.1)}
+.btn{appearance:none;border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--bone);border-radius:10px;padding:10px 14px;font:600 14px var(--f-body);min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.red{background:linear-gradient(180deg,#a61a27,#650b14);border-color:#c42330}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:34px;padding:6px 11px;font-size:13px;border-radius:8px}
+.btn[disabled]{opacity:.45}
+.btn.full{width:100%}
+.seg{display:flex;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ash);font:600 13px var(--f-body);padding:8px 4px;border-radius:7px;min-height:38px}
+.seg button.on{background:rgba(196,35,48,.24);color:var(--bone);box-shadow:inset 0 0 0 1px rgba(196,35,48,.55)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line-2);background:rgba(255,255,255,.03);color:var(--ash);border-radius:999px;padding:7px 13px;font:600 12.5px var(--f-body);min-height:34px}
+.chip.on{color:var(--bone);border-color:rgba(196,35,48,.7);background:rgba(196,35,48,.18)}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:5px;border:1px solid var(--line-2);color:var(--ash)}
+.pill.red{border-color:rgba(196,35,48,.6);color:#f0a2a8}
+.pill.ok{border-color:rgba(111,179,147,.5);color:var(--ok)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
+.sw{width:46px;height:28px;border-radius:999px;border:1px solid var(--line-2);background:rgba(0,0,0,.4);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--dim);transition:transform .2s}
+.sw[aria-checked=true]{background:rgba(196,35,48,.35);border-color:rgba(196,35,48,.7)}
+.sw[aria-checked=true]::after{transform:translateX(18px);background:var(--bone)}
+textarea,input[type=text],select{width:100%;background:rgba(0,0,0,.45);border:1px solid var(--line-2);color:var(--bone);border-radius:10px;padding:11px 12px;font:15px/1.45 var(--f-body)}
+textarea{min-height:84px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--ember)}
+label.lab{display:block;font-size:12.5px;color:var(--ash);margin-bottom:6px}
+hr.sep{border:0;border-top:1px solid var(--line);margin:4px 0}
+.list{display:flex;flex-direction:column;gap:8px}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+
+/* transit */
+.orb{position:relative;display:grid;place-items:center;width:min(60vw,220px);aspect-ratio:1;margin:22px auto 10px;border-radius:50%;border:0;color:var(--bone);background:radial-gradient(circle at 50% 40%,#6a0d18 0%,#2a050b 46%,#0a0203 74%);box-shadow:0 0 0 1px rgba(196,35,48,.4),0 0 70px rgba(196,35,48,.28),inset 0 0 50px rgba(0,0,0,.85)}
+.orb::before,.orb::after{content:"";position:absolute;inset:-11px;border-radius:50%;border:1px dashed rgba(196,35,48,.4);animation:spin 46s linear infinite;pointer-events:none}
+.orb::after{inset:-24px;border-style:dotted;border-width:2px;border-color:rgba(196,35,48,.22);animation-duration:80s;animation-direction:reverse}
+.orb:active{transform:scale(.97)}
+.orb .o-l{font-family:var(--f-dot);font-weight:900;font-size:36px;letter-spacing:.06em;line-height:1}
+.orb .o-s{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:#d9a7ab;margin-top:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.next-list{display:flex;flex-direction:column;gap:2px}
+.next-list .kv b{font-weight:600}
+
+/* path */
+.track{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.18em;color:var(--ember);text-transform:uppercase;margin:22px 0 8px}
+.mod{display:grid;grid-template-columns:46px 1fr 42px;gap:12px;align-items:center;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025);text-align:left}
+.mod + .mod{margin-top:8px}
+.mod .n{font-family:var(--f-dot);font-weight:900;font-size:28px;color:var(--ember);line-height:1}
+.mod .t{font-weight:650;font-size:15px;display:block}
+.mod .s{display:block;font-size:12.5px;color:var(--ash);line-height:1.35;margin-top:2px}
+.mod.next{border-color:rgba(196,35,48,.6);box-shadow:0 0 26px rgba(196,35,48,.14)}
+.ring{width:40px;height:40px;display:block}
+.ring .bg{stroke:rgba(255,255,255,.08)}
+.ring .fg{stroke:var(--ember);stroke-linecap:round;transition:stroke-dashoffset .6s}
+.ring text{font:700 10px var(--f-mono);fill:var(--bone)}
+.script{font-size:15.5px;line-height:1.62;color:#e6dcdb}
+.script p + p{margin-top:12px}
+.concept{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14px}
+.concept dt{font-weight:650;color:var(--bone)}
+.concept dd{margin:0;color:var(--ash)}
+.vid{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);text-decoration:none}
+.vid + .vid{margin-top:6px}
+.vid .vn{font-family:var(--f-dot);font-weight:900;font-size:18px;color:var(--ember)}
+.vid .vt{font-size:14px;font-weight:600;line-height:1.3;display:block}
+.vid .vw{font-size:12px;color:var(--ash);display:block}
+.vid.seen{opacity:.6}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#6d0c15,var(--ember));border-radius:3px}
+
+/* ambrose */
+.presence{display:flex;gap:14px;align-items:center}
+.eye{width:58px;height:58px;flex:none;border-radius:50%;background:radial-gradient(circle at 50% 50%,#000 0 18%,#7a0e18 19% 34%,#1a0407 35% 70%,#000 71%);box-shadow:0 0 0 1px rgba(196,35,48,.45),0 0 30px rgba(196,35,48,.3)}
+.eye.talking{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 1px rgba(196,35,48,.8),0 0 46px rgba(196,35,48,.6)}}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:88%;padding:10px 12px;border-radius:12px;font-size:14.5px;line-height:1.5;white-space:pre-wrap}
+.msg.me{align-self:flex-end;background:rgba(196,35,48,.2);border:1px solid rgba(196,35,48,.35)}
+.msg.amb{align-self:flex-start;background:rgba(255,255,255,.045);border:1px solid var(--line)}
+.q-big{font-size:19px;line-height:1.4;font-weight:600;text-wrap:balance}
+.fact{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fact:last-child{border-bottom:0}
+.fact .x{margin-left:auto;border:0;background:none;color:var(--dim);font-size:18px;line-height:1;padding:2px 4px;min-width:28px;min-height:28px}
+.hyp{padding:11px 0;border-bottom:1px solid var(--line)}
+.hyp:last-child{border-bottom:0}
+
+/* pulse */
+.big-num{font-family:var(--f-dot);font-weight:900;font-size:76px;line-height:.9;color:var(--bone);font-variant-numeric:tabular-nums}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.tile .v{font-family:var(--f-dot);font-weight:900;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.tile .l{font-size:12px;color:var(--ash);margin-top:6px}
+.hbar{display:grid;grid-template-columns:86px 1fr 44px;gap:10px;align-items:center;font-size:13px;padding:5px 0}
+.hbar .bar{height:8px}
+.chart{width:100%;height:auto;display:block}
+.chart text{font:10px var(--f-mono);fill:var(--ash)}
+
+/* now playing */
+.np{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,.3);padding:calc(16px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom))}
+.np[hidden]{display:none}
+.np.drive{background:rgba(0,0,0,.55)}
+body.np-open .app,body.np-open .dock{visibility:hidden}
+.np-top{display:flex;align-items:center;gap:10px}
+.np-title{font-size:13px;color:var(--ash);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np-time{font-family:var(--f-mono);font-size:12px;color:var(--ash)}
+.np-tap{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px;border-radius:18px;overflow:auto}
+.np-cap{font-size:clamp(22px,6.6vw,34px);line-height:1.3;font-weight:620;text-wrap:balance;max-width:24ch}
+.np-heard{font-size:17px;color:#f0a2a8;font-style:italic;min-height:1em}
+.np-prompt{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ember);min-height:1em}
+.np-prompt.live{animation:pulse-t 1.1s ease-in-out infinite}
+@keyframes pulse-t{50%{opacity:.35}}
+.np-grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.np-grade[hidden]{display:none}
+.np-grade button{height:78px;border-radius:18px;font:700 18px var(--f-body);border:1px solid var(--line-2);background:rgba(255,255,255,.05)}
+.np-grade button[data-g="1"]{background:linear-gradient(180deg,#a61a27,#650b14);border-color:#c42330}
+.np-ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.np-ctl button{height:66px;border-radius:18px;border:1px solid var(--line-2);background:rgba(20,8,10,.6);display:grid;place-items:center}
+.np-ctl button.main{background:linear-gradient(180deg,#a61a27,#650b14);border-color:#c42330}
+.np-ctl svg{width:26px;height:26px;fill:none;stroke:var(--bone);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.np-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.np-prog i{display:block;height:100%;background:var(--ember);width:0;transition:width .4s}
+
+/* sheet, toast, modal */
+.sheet-wrap{position:fixed;inset:0;z-index:25;display:flex;justify-content:center;align-items:stretch;background:rgba(0,0,0,.55);padding:calc(38px + env(safe-area-inset-top)) 8px calc(8px + env(safe-area-inset-bottom))}
+.sheet-wrap[hidden]{display:none}
+.sheet{max-width:560px;animation:rise .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes rise{from{transform:translateY(30px);opacity:0}}
+.toast{position:fixed;z-index:40;top:calc(38px + env(safe-area-inset-top));right:10px;width:min(340px,calc(100% - 20px));padding:11px 13px;border-radius:13px;background:rgba(28,12,15,.85);border:1px solid var(--line-2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 14px 40px rgba(0,0,0,.6);font-size:13.5px;animation:rise .25s}
+.toast[hidden]{display:none}
+.toast b{display:block;font-size:12px;letter-spacing:.04em;margin-bottom:2px}
+.copybox{font:12px/1.4 var(--f-mono);min-height:160px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="app">
+  <header class="menubar">
+    <svg class="sigil" viewBox="0 0 16 16" aria-hidden="true"><g fill="#c42330"><circle cx="8" cy="2" r="1.3"/><circle cx="13.2" cy="5" r="1.3"/><circle cx="13.2" cy="11" r="1.3"/><circle cx="8" cy="14" r="1.3"/><circle cx="2.8" cy="11" r="1.3"/><circle cx="2.8" cy="5" r="1.3"/><circle cx="8" cy="8" r="1.6" fill="#efe8e7"/></g></svg>
+    <b class="brand">Umbra</b>
+    <button class="mi" data-go="transit">Transit</button>
+    <button class="mi" data-go="path">Path</button>
+    <button class="mi" data-go="ambrose">Ambrose</button>
+    <button class="mi" data-go="pulse">Pulse</button>
+    <span class="mb-right">
+      <span class="st" title="Ambrose's mind (Gemini)"><i class="sdot" id="d-link"></i>MIND</span>
+      <span class="st" title="Can Ambrose hear you?"><i class="sdot" id="d-ear"></i>EAR</span>
+      <span class="st" title="Brain backed up this week"><i class="sdot" id="d-sync"></i>SAVED</span>
+      <button class="gear" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      <span id="clock" class="num"></span>
+    </span>
+  </header>
+  <div class="stage">
+    <section class="window" aria-label="Umbra">
+      <div class="titlebar"><div class="lights" aria-hidden="true"><i></i><i></i><i></i></div><div class="ttl" id="ttl">umbra — transit</div></div>
+      <main class="view" id="view"></main>
+    </section>
+  </div>
+</div>
+
+<nav class="dock" id="dock" aria-label="Sections">
+  <button data-go="transit" aria-label="Transit"><svg viewBox="0 0 24 24"><path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/></svg></button>
+  <button data-go="path" aria-label="Path"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><path d="M6.5 17.5l4-4M13.5 10.5l4-4"/><circle cx="5" cy="5" r="1" /><circle cx="19" cy="19" r="1"/></svg></button>
+  <button data-go="ambrose" aria-label="Ambrose"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r=".6" fill="#efe8e7"/></svg></button>
+  <button data-go="pulse" aria-label="Pulse"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+</nav>
+
+<div id="np" class="np" hidden role="dialog" aria-label="Now playing">
+  <div class="np-top"><span class="pill red" id="np-kind">Lesson</span><span class="np-title" id="np-title"></span><span class="np-time" id="np-time">00:00</span></div>
+  <div class="np-prog"><i id="np-bar"></i></div>
+  <div class="np-tap" id="np-tap" tabindex="0">
+    <p class="np-cap" id="np-cap"></p>
+    <p class="np-heard" id="np-heard"></p>
+    <p class="np-prompt" id="np-prompt"></p>
+  </div>
+  <div class="np-grade" id="np-grade" hidden><button data-g="0">Missed it</button><button data-g="1">Got it</button></div>
+  <div class="np-ctl">
+    <button data-np="replay" aria-label="Repeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button data-np="pause" class="main" aria-label="Pause"><svg viewBox="0 0 24 24" id="np-pp"><path d="M8 5v14M16 5v14"/></svg></button>
+    <button data-np="skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M19 5v14"/></svg></button>
+    <button data-np="end" aria-label="End session"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></button>
+  </div>
+</div>
+
+<div id="sheet" class="sheet-wrap" hidden>
+  <section class="window sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-ttl">
+    <div class="titlebar"><div class="lights"><i role="button" tabindex="0" aria-label="Close" data-act="close-sheet"></i><i></i><i></i></div><div class="ttl" id="sheet-ttl"></div></div>
+    <div class="view" id="sheet-body"></div>
+  </section>
+</div>
+<div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ================= CURRICULUM ================= */
+const TRACKS={READ:'Read them',MOVE:'Move them',DEEP:'Beneath the surface',DARK:'The dark side'};
+const DOMS=[['mind','Mind'],['read','Read'],['persuade','Persuade'],['deal','Deal'],['dark','Dark'],['power','Power']];
+const MODULES=[
+{id:'os',n:1,track:'READ',dom:'mind',title:'The Operating System',sum:'How the mind really decides: two systems, anchors, loss aversion.',
+script:[
+"Before you can read anyone, Joe, you need to know the machine you're reading. Daniel Kahneman split the mind into two systems. System One is fast, automatic and emotional. It has already decided whether it likes you before you've finished the handshake. System Two is slow, effortful and lazy. Mostly, it signs off whatever System One hands it. Almost all persuasion is aimed at System One.",
+"Here's the one to remember. Anchoring. In a famous experiment, people spun a wheel rigged to stop on ten or sixty-five, then guessed what percentage of African countries were in the United Nations. The ten group guessed around twenty-five. The sixty-five group guessed around forty-five. A meaningless number moved their judgement.",
+"Now add loss aversion. Losses hit roughly twice as hard as equal gains. People fight harder to avoid losing a thousand pounds than to win one. And the availability heuristic: whatever comes to mind easily feels more likely.",
+"So. The first number spoken in a room shapes every number after it. The fear of losing a deal moves people more than the hope of winning one. And a vivid story beats a spreadsheet. You're not dealing with rational buyers. Neither, I'm afraid, are they."],
+concepts:[['System 1 / System 2','Fast emotional autopilot versus slow, lazy reasoning that mostly rubber-stamps it.'],['Anchoring','The first number heard pulls every later estimate towards it.'],['Loss aversion','Losses feel about twice as strong as equal gains.'],['Availability','Easy-to-recall examples feel more likely and more important.']],
+deal:"Put your number on the table first when you can justify it. The anchor sets the range. Frame terms around what they lose by walking away, not what they gain by signing.",
+drill:"In your next negotiation, note who says the first number and how far the final figure lands from it.",
+vids:[['CjVQJdIrDJ0','Thinking, Fast and Slow','Daniel Kahneman · Talks at Google','Lecture'],['HefjkqKCVpo','Anchoring','Daniel Kahneman','Short'],['wEwGBIr_RIw','12 Cognitive Biases Explained','Animated explainer','Explainer'],['NNnIGh9g6fA','Human Behavioral Biology: Introduction','Robert Sapolsky · Stanford','Deep lecture']],
+find:['anchoring bias negotiation','loss aversion explained','system 1 system 2 examples'],
+cards:[["In the spinning-wheel experiment, what did a random number do to people's estimates?","It anchored them. A high random number produced higher estimates and a low one produced lower estimates.",["anchor","higher|high","number"]],["Roughly how much harder do losses hit than equal gains?","About twice as hard. That's loss aversion.",["twice|two|2|double"]],["Which of Kahneman's two systems does most persuasion target, and why?","System One, the fast emotional one, because System Two is lazy and usually rubber-stamps it.",["one|1|fast","emotion|automatic|intuit"]]]},
+
+{id:'body',n:2,track:'READ',dom:'read',title:'The Body Speaks',sum:'Navarro\'s FBI method: comfort, discomfort, feet, pacifiers, baselines.',
+script:[
+"Joe Navarro spent twenty-five years in the FBI reading people who were lying to him. His first rule isn't a gesture. It's comfort and discomfort. The limbic brain reacts before the thinking brain gets a vote. Freeze, flight, fight. Freeze shows as sudden stillness and held breath. Flight shows as leaning away, blocking, and turning the feet towards the door.",
+"The feet are the most honest part of the body, because nobody has trained them to lie. When someone turns their feet away mid-conversation, they want to leave, whatever their face is saying.",
+"Watch for pacifying. Touching the neck, rubbing the thighs, stroking the face. That's the body calming itself after stress.",
+"And the golden rule. Baseline first. One crossed arm means nothing. A change from how that person normally sits, right after you say a specific thing, means a great deal. Clusters, not single signals. Changes, not poses.",
+"Oh, and the claim that ninety-three percent of communication is non-verbal? It's a misreading of Albert Mehrabian's studies, which were about feelings and attitudes when words and tone clash. Don't repeat it in front of anyone clever."],
+concepts:[['Comfort / discomfort','The master read. Everything else is detail.'],['Freeze, flight, fight','Limbic reactions that leak before thought catches up.'],['Feet don\'t lie','Feet point where people want to go.'],['Pacifiers','Neck, face and thigh touching to self-soothe after stress.'],['Baseline + clusters','Read changes from normal, in groups, tied to a moment.']],
+deal:"At a viewing, watch the feet when you mention rent, rates or lease length. Feet swinging to the exit is an objection they haven't said yet. Label it before they leave the building.",
+drill:"On your next viewing, spend the first two minutes baselining the client: stance, hands, how much they talk. Then watch what changes when the rent comes up.",
+vids:[['4jwUXV4QaTw','How to Read Body Language','Joe Navarro · WIRED Tradecraft','Breakdown'],['aThjX4rsnfk','Universal Body Language','Joe Navarro · WIRED','Breakdown'],['f9SA25OukyM','Body Language Questions Answered','Joe Navarro · WIRED','Q&A'],['cef35Fk7YD8','You Are Contagious','Vanessa Van Edwards · TEDxLondon','Talk'],['zZ7cuQnXS30','"Stop Reading Body Language" (the 93% myth)','Chase Hughes','Interview']],
+find:['Joe Navarro pacifying behaviors','body language baseline cluster','reading body language in sales meetings'],
+cards:[["According to Navarro, which part of the body is most honest, and why?","The feet, because we rarely think to control them.",["feet|foot"]],["Why is a single gesture, like crossed arms, unreliable on its own?","You need a baseline and a cluster. Read changes from someone's normal behaviour, in groups of signals, tied to a moment.",["baseline|normal","cluster|group|several","change"]],["What is a pacifying behaviour? Give an example.","Self-soothing after stress, like touching the neck, rubbing the hands or thighs, or stroking the face.",["sooth|calm|stress","neck|rub|face|touch"]]]},
+
+{id:'face',n:3,track:'READ',dom:'read',title:'The Face Leaks',sum:'Ekman\'s universal expressions, micro-expressions, contempt, real smiles.',
+script:[
+"Paul Ekman travelled to Papua New Guinea in the nineteen-sixties and found that some facial expressions look the same everywhere. Seven of them: happiness, sadness, fear, anger, surprise, disgust and contempt. When someone tries to hide one, it can leak out as a micro-expression, a flash lasting a fraction of a second before the mask comes back.",
+"Two to learn first. Contempt is the only one-sided expression. One corner of the mouth tightens and lifts. It means: I'm above you, or above this. If a buyer flashes contempt at your number, the number is the problem.",
+"Second, the real smile. A genuine smile, the Duchenne smile, reaches the eyes. The cheeks lift and crow's feet appear. A polite smile stays in the mouth. Navarro adds the lips. When people disagree or hold something back, the lips compress and disappear.",
+"Now the honest bit. A micro-expression tells you an emotion was felt. It doesn't tell you why. Fear on a face might be fear of being caught, or fear of not being believed. Read the emotion. Then ask about it."],
+concepts:[['Seven universals','Happiness, sadness, fear, anger, surprise, disgust, contempt.'],['Micro-expression','A fraction-of-a-second leak of a hidden emotion.'],['Contempt','The only one-sided expression. Superiority.'],['Duchenne smile','Real smiles reach the eyes.'],['Lip compression','Lips vanish under stress or disagreement.']],
+deal:"A contempt flash when you name the asking price means they think it's overpriced. Lips compressing as you list terms means a condition they'll fight. Deal with it now, not at offer stage.",
+drill:"In your next three client meetings, catch one genuine smile and one polite one. Note what you'd just said.",
+vids:[['VAB9cUlGrRo','How to Read Facial Expressions','Joe Navarro · WIRED','Breakdown'],['lISfh-Ip-qA','Exploring Facial Expressions','Paul Ekman','Interview'],['EGjdMWQP8vY','What You Need to Know About Micro Expressions','Paul Ekman','Short'],['G5wpFFowPAo','The Contempt Micro Expression','Paul Ekman Group','Short']],
+find:['micro expressions training examples','duchenne smile vs fake smile','contempt facial expression negotiation'],
+cards:[["Which universal expression is one-sided, and what does it signal?","Contempt. One corner of the mouth tightens and lifts. It signals superiority or disdain.",["contempt","superior|disdain|above|look down"]],["How do you tell a genuine smile from a polite one?","A genuine Duchenne smile reaches the eyes: the cheeks lift and crow's feet appear.",["eye|crow|cheek|duchenne"]],["What can a micro-expression tell you, and what can't it?","It shows an emotion was felt, but not why. You still have to find the cause.",["emotion|feel","why|cause|reason"]]]},
+
+{id:'persuade',n:4,track:'MOVE',dom:'persuade',title:'The Persuasion Code',sum:'Cialdini\'s seven levers and the moment before the ask.',
+script:[
+"Robert Cialdini spent years undercover in sales teams, fundraisers and car showrooms, and boiled down what worked. Reciprocity: give first, and people feel they owe you. Scarcity: people want more of what there's less of, and what they might lose. Authority: we defer to credible experts. Consistency: once someone commits to a small step, they want to stay consistent with it.",
+"Liking: we say yes to people we like, people who are similar to us and who compliment us. Consensus, or social proof: when unsure, we copy what people like us did. And in 2016 he added a seventh. Unity. Shared identity. People like us do this.",
+"Then came Pre-suasion. The moment before the message matters as much as the message. Whatever you get someone to focus on just before your ask becomes more important in their mind. Ask someone whether they see themselves as adventurous before you pitch the bold option, and they're more likely to take it.",
+"Every lever here works on you too. Next time you feel a sudden urge to say yes, ask yourself which lever just got pulled."],
+concepts:[['Reciprocity','Give first and people feel they owe you.'],['Scarcity','Less available, or about to be lost, means more wanted.'],['Authority · Consistency','Credible experts and small first commitments.'],['Liking · Consensus · Unity','Similarity, social proof, shared identity.'],['Pre-suasion','Control what they focus on just before the ask.']],
+deal:"Real scarcity only. Inventing a rival offer is a banned practice for UK estate agents and can get you prohibited from working. Use the genuine kind: real interest, real deadlines, the last unit of its size.",
+drill:"Before your next pitch, decide exactly what the client should be thinking about in the thirty seconds before you name the figure.",
+vids:[['cFdCzN7RYbw','Science of Persuasion','Robert Cialdini · Influence at Work','Animated'],['GPVkuPT9WFI','Influence: Animated Summary','Book summary','Explainer'],['2SF5ekV3fmo','Pre-Suasion: Summary','Book summary','Explainer']],
+find:['Cialdini principles in sales examples','pre-suasion techniques','social proof commercial property marketing'],
+cards:[["Name Cialdini's seven principles of persuasion.","Reciprocity, scarcity, authority, consistency, liking, consensus or social proof, and unity.",["reciproc","scarc","author","consist|commit","lik","consensus|social proof","unity"]],["What is pre-suasion?","Shaping what someone focuses on right before your message, so they're receptive when it lands.",["before|prior","focus|attention|moment"]],["Why does a small first commitment make a bigger yes more likely?","Consistency. People want to act in line with what they've already said or done.",["consisten|commit"]]]},
+
+{id:'price',n:5,track:'MOVE',dom:'persuade',title:'Price & Perception',sum:'Decoys, framing and why value lives in the mind.',
+script:[
+"Rory Sutherland, the Ogilvy ad man, likes to say that the opposite of a good idea can also be a good idea, and that value is created as much in the mind as in the product. People don't buy the thing. They buy how the thing feels.",
+"Dan Ariely showed it with an old Economist subscription offer. Web only, fifty-nine dollars. Print only, a hundred and twenty-five. Print and web, also a hundred and twenty-five. Nobody wants print only. It's a decoy. But it makes print and web look like a steal, and most of his students chose it. Remove the decoy, and most switched to the cheap web-only option. Same choices, different context, different decision.",
+"Add framing. Ninety percent let and ten percent vacant are the same building and very different feelings. Add the anchor from your first lesson, and you have the price toolkit. Present three options, not two. Lead with the high one. Make the one you want look like the obvious winner next to its neighbour.",
+"One warning. Some of Ariely's other research has faced serious questions about its data. The decoy effect itself was first shown by other researchers and holds up in many settings. Treat him as a storyteller, not scripture."],
+concepts:[['Decoy effect','A clearly worse option makes its neighbour look brilliant.'],['Framing','Same facts, different feeling.'],['Perceived value','People buy how it feels, not what it is.'],['Three-option pricing','Premium anchor, target, decoy.']],
+deal:"When you present units or terms, give three: a premium option, the one you want them to take, and a weaker decoy that makes your target look obviously better.",
+drill:"Rewrite one property description so the same facts feel different. Try 'ninety percent let' against 'one unit left'.",
+vids:[['9X68dm92HVI','Are We in Control of Our Decisions?','Dan Ariely · TED','Talk'],['audakxABYUc','Life Lessons from an Ad Man','Rory Sutherland · TED','Talk'],['iueVZJVEmEs','Perspective Is Everything','Rory Sutherland · TEDxAthens','Talk']],
+find:['decoy effect pricing examples','framing effect sales','Rory Sutherland alchemy reframing'],
+cards:[["What is the decoy effect?","Adding an obviously worse option makes a similar, better option look far more attractive.",["decoy|worse|inferior","option|choice|attractive"]],["In Ariely's Economist example, what happened when the print-only option was removed?","Most people switched from print-and-web to the cheaper web-only option.",["web","cheap|switch|changed"]],["Why present three options instead of two?","The target option can be framed against a premium anchor and a weaker decoy, which steers the choice.",["anchor|premium|high","decoy|worse|compar"]]]},
+
+{id:'negotiate',n:6,track:'MOVE',dom:'deal',title:'The Negotiator',sum:'Chris Voss: tactical empathy, mirrors, labels and the Ackerman model.',
+script:[
+"Chris Voss was the FBI's lead international kidnapping negotiator. His view: people aren't rational, so stop arguing logic and start using tactical empathy. Showing you understand how they feel, which isn't the same as agreeing.",
+"Four tools. The mirror: repeat the last one to three words they said, as a question. Too high? Then shut up. They'll expand. The label: name their emotion. It seems like you're worried about being locked in. Never say I hear you. Let the silence after a label do the work.",
+"The accusation audit: list every negative thing they might think about you before they say it. You probably think we're overpricing this. It takes the sting out. Calibrated questions: How am I supposed to do that? What about this doesn't work for you? They make the other side solve your problem.",
+"Listen for 'that's right'. 'You're right' means they want you to stop talking. 'That's right' means they feel understood. That's the breakthrough. On price, his Ackerman model: plan offers at sixty-five, eighty-five, ninety-five and a hundred percent of your target, shrinking each step, and finish on a precise, non-round number. Precise numbers feel calculated, so they feel final."],
+concepts:[['Tactical empathy','Show you understand the feeling without agreeing.'],['Mirror','Repeat the last 1–3 words, then go silent.'],['Label','"It seems like…" naming their emotion.'],['Accusation audit','Say their worst thoughts about you first.'],['Calibrated questions','"How" and "what" questions that hand them your problem.'],['Ackerman','65 / 85 / 95 / 100 percent, ending on a precise figure.']],
+deal:"When a tenant says the rent's too high, don't defend the number. Mirror: 'Too high?' Then label: 'Sounds like you're worried about cash flow in year one.' Now you're negotiating the real problem.",
+drill:"Use one mirror and one label on every call today. Count how often the other side keeps talking after a mirror.",
+vids:[['QB9akDRbZGo','Learn the Best Negotiation Strategies','Chris Voss','Interview'],['ThQ8xPGg-QQ','Labeling Emotions Will Change Their Perception of You','Chris Voss','Short'],['q6lV87bZUfE','How to Win Negotiations with Tactical Empathy','Chris Voss','Interview']],
+find:['Chris Voss mirroring labeling examples','accusation audit examples','Ackerman bargaining model explained'],
+cards:[["What is a mirror, in Chris Voss's method?","Repeating the last one to three words they said, with an upward tone, then staying silent so they elaborate.",["repeat","last|word"]],["Why is 'that's right' better than 'you're right'?","'That's right' means they feel understood. 'You're right' is often a way to make you stop talking.",["understood|understand","stop|shut|end"]],["Describe the Ackerman offer sequence.","Offers at sixty-five, eighty-five, ninety-five and a hundred percent of your target, with shrinking steps, ending on a precise non-round number.",["65|sixty","85|eighty","95|ninety","precise|exact|round"]]]},
+
+{id:'close',n:7,track:'MOVE',dom:'deal',title:'The Closer',sum:'SPIN, self-persuasion questions, the real objection, the three tens.',
+script:[
+"Neil Rackham's team studied more than thirty-five thousand sales calls and found something uncomfortable. In big sales, classic hard-closing techniques actually lowered success. What worked was questions.",
+"SPIN. Situation questions get facts. Problem questions find difficulties. Implication questions make the cost of those difficulties grow. Need-payoff questions get the buyer to say the value out loud themselves. Implication is where top sellers separate. If your current unit can't take a second production line, what does that do to next year's growth plan? Now the problem is expensive, and you never had to say so.",
+"Jeremy Miner pushes the same idea further: a calm, curious, slightly detached tone, and questions that let prospects persuade themselves. Alex Hormozi's point on stalls: there's usually one real concern hiding behind a polite excuse. Find it, then solve that one.",
+"Jordan Belfort's straight line adds certainty. The buyer needs to be sure about the product, about you, and about your company. Certainty is transferred, not argued. A note on Belfort: he went to prison for securities fraud. Learn the mechanics. Leave the ethics in the nineties."],
+concepts:[['SPIN','Situation, Problem, Implication, Need-payoff.'],['Implication questions','Make the cost of doing nothing grow in their head.'],['Self-persuasion','They believe what they say, not what you say.'],['The real objection','A polite stall hides one true concern.'],['Three tens','Certainty in product, salesperson, company.']],
+deal:"Before any pitch, write three implication questions about what staying in their current premises is costing them. Ask them, then let the client tell you why they need to move.",
+drill:"On your next call, ask at least two implication questions before you mention a single property feature.",
+vids:[['TSUeakjHYCE','The Origins of SPIN Selling','Neil Rackham','Interview'],['KCu1EyMxHcE','4 Sales Questions So Good Prospects Close Themselves','Jeremy Miner','Training'],['CwmV4azspI8','Close Any Sale in 3 Steps','Alex Hormozi','Training'],['4_AbyMhml4k','An Introduction to the Straight Line','Jordan Belfort','Training']],
+find:['SPIN selling implication questions examples','NEPQ consequence questions','handling objections commercial property'],
+cards:[["What does SPIN stand for?","Situation, Problem, Implication and Need-payoff questions.",["situation","problem","implication","need"]],["Which SPIN question type most separates top performers, and what does it do?","Implication questions. They make the cost of the buyer's problem bigger and more urgent in the buyer's own mind.",["implication","cost|bigger|urgent|worse"]],["What are Belfort's three tens?","Certainty about the product, about you the salesperson, and about the company.",["product","you|salesperson|person|seller","company|firm"]]]},
+
+{id:'lies',n:8,track:'DEEP',dom:'read',title:'Lies & Interrogation',sum:'Why nobody can spot liars, and what actually works.',
+script:[
+"The brutal fact first. Across hundreds of studies, people detect lies at about fifty-four percent. Barely better than a coin. There's no Pinocchio's nose. No single tell means lying.",
+"Pamela Meyer looks for clusters and mismatches. Words that say yes while the head shakes no. Over-formal denials: I did not take that money, rather than I didn't take it. Too much irrelevant detail, or a story told in suspiciously perfect order.",
+"Aldert Vrij's research gives you the better tool. Cognitive load. Lying is harder work than telling the truth. So make thinking harder. Ask for the story backwards. Ask an unexpected question. Liars tend to crack more than truth-tellers.",
+"Then Saul Kassin's warning. Pressure interrogations that assume guilt, like the American Reid technique, produce false confessions from innocent people. The UK moved to the PEACE model in the nineties: open, information-gathering interviews instead of accusation. Better information, fewer false confessions. Your lesson: you don't catch lies by staring at eyes. You catch them by asking good open questions, then checking the story against facts."],
+concepts:[['The 54% problem','Humans are near chance at spotting lies.'],['Clusters & mismatches','Words and body disagreeing, formal denials.'],['Cognitive load','Make thinking harder; liars struggle more.'],['Reverse order','Ask for the story backwards.'],['PEACE vs Reid','Open interviewing beats accusation.']],
+deal:"When a buyer's 'budget' story doesn't add up, don't accuse. Ask for it in a different order: 'Walk me back from board sign-off to where the figure came from.' Inconsistencies surface on their own.",
+drill:"Next time a story feels off, ask one unexpected question and one request to tell it backwards. Note how the fluency changes.",
+vids:[['P_6vDLq64gE','How to Spot a Liar','Pamela Meyer · TED','Talk'],['JDRRwFfJKkw','False Confessions','Saul Kassin','Lecture'],['Ou0SNbP5d7Q','What Does Science Tell Us About False Confessions?','Saul Kassin','Short'],['3mM-C0jz3co','How to Influence Anyone & Read People','Chase Hughes','Interview']],
+find:['Aldert Vrij cognitive load lie detection','PEACE model investigative interviewing','deception detection research'],
+cards:[["How accurate are people at detecting lies, on average?","About fifty-four percent, barely better than chance.",["54|fifty|chance|coin|half"]],["What is the cognitive load approach to lie detection?","Make thinking harder, for example by asking for the story backwards, because lying already uses more mental effort.",["hard|load|effort","backward|reverse|unexpected"]],["What's the difference between the Reid technique and the UK's PEACE model?","Reid is accusatory and assumes guilt. PEACE is open, information-gathering interviewing, and produces fewer false confessions.",["accus|guilt|pressure","open|information|gather"]]]},
+
+{id:'covert',n:9,track:'DEEP',dom:'persuade',title:'Covert Influence',sum:'Priming, showmanship and feeding the need that drives someone.',
+script:[
+"Derren Brown built a career on looking like he could plant ideas in people's heads. In one famous piece, two advertising creatives design a poster that matches his sealed prediction almost exactly, apparently because he seeded the images along their taxi route. He's open that his shows mix psychology, suggestion, misdirection and showmanship.",
+"So the lesson isn't that subliminal control works. The evidence for it is weak. The lesson is that context primes behaviour. What people see and hear just before they decide nudges what they decide.",
+"Chase Hughes, a former Navy chief who trains intelligence and law enforcement, comes at it from behaviour profiling. Watch what people need: significance, acceptance, approval, intelligence, pity, power. Find which need drives someone and you know what they're hungry to hear. Someone who needs to look intelligent will choose the option that makes them look clever. Someone who needs approval will choose what their boss will praise.",
+"Covert influence is mostly this. Shape the environment. Feed the need. Let them think it was their idea."],
+concepts:[['Priming','What comes just before a decision shapes it.'],['Showmanship vs science','Brown blends technique with theatre.'],['Social needs','Significance, acceptance, approval, intelligence, pity, power.'],['Their idea','People defend decisions they think they made.']],
+deal:"Profile the decision-maker's need before the meeting. Intelligence-driven? Give them data to discover for themselves. Approval-driven? Show them how their board will see the deal.",
+drill:"For your next three clients, guess their dominant social need from the first five minutes. Test it by feeding it.",
+vids:[['43Mw-f6vIbo','Tricking Advertisers with Adverts','Derren Brown','Demonstration'],['L2E7OBWPG5I','Brainwashes an Entire Shopping Mall','Derren Brown','Demonstration'],['RvjR9GM2kX8','Instantly Read Any Room','Chase Hughes · Diary of a CEO','Interview'],['vXYqy0hSYn8','Mind Control','Chase Hughes · The Behavior Panel','Interview']],
+find:['Chase Hughes social needs profiling','priming effect marketing','Derren Brown suggestion explained'],
+cards:[["Name Chase Hughes's six social needs.","Significance, acceptance, approval, intelligence, pity, and power or strength.",["signific","accept","approv","intellig","pity","power|strength"]],["Does Derren Brown's work prove that subliminal messages control people?","No. He mixes psychology with suggestion, misdirection and showmanship. The real lesson is that context primes behaviour.",["no|not","show|misdirect|prim|context"]],["What's the core move of covert influence in sales?","Shape the context, feed their dominant need, and let them believe the decision was their own idea.",["context|environment","need","own idea|their idea|their decision|think it"]]]},
+
+{id:'triad',n:10,track:'DARK',dom:'dark',title:'The Dark Triad',sum:'Narcissism, Machiavellianism, psychopathy, and how to deal with them.',
+script:[
+"In 2002, Delroy Paulhus and Kevin Williams grouped three overlapping traits and called them the dark triad. Narcissism: grandiosity, entitlement, a hunger for admiration. Machiavellianism: cold strategy, manipulation, a long game, a cynical view of people. Psychopathy: impulsivity, thrill-seeking, shallow emotion and little remorse. Some researchers add a fourth, everyday sadism, and call it the dark tetrad.",
+"These are traits on a scale, not boxes. Everyone has some. Clinical psychopathy, measured with Robert Hare's checklist, is thought to affect around one percent of people, and some studies find more of it in senior corporate roles. Jon Ronson's warning is the useful one: once you learn the checklist, you'll start seeing psychopaths everywhere, and that itself is a kind of madness.",
+"Spotting high scorers at work: charm that arrives too fast. Stories where they're always the hero. Rules for everyone else. Flattery upward, contempt downward.",
+"Handling them: never show them what you want most. Keep everything in writing. Don't try to out-manipulate them. Out-document them."],
+concepts:[['Narcissism','Grandiosity, entitlement, need for admiration.'],['Machiavellianism','Cold strategy and a long manipulative game.'],['Psychopathy','Impulsive, shallow emotion, little remorse.'],['Dark tetrad','Adds everyday sadism.'],['Traits, not labels','Everyone scores somewhere on each.']],
+deal:"High-Mach buyers negotiate to win, not to agree. Expect strategic lies and late re-trades. Put every concession in writing the same day and pin timelines in the heads of terms.",
+drill:"Think of the hardest negotiator you've dealt with. Score them privately on the three traits. What did they want you to feel?",
+vids:[['gNEqnzUjyxE','The Dark Triad Explained','Explainer','Explainer'],['tmKQAhW1Jcc','Machiavellianism vs Psychopathy vs Narcissism','Lecture clip','Lecture'],['xYemnKEKx0c','Strange Answers to the Psychopath Test','Jon Ronson · TED','Talk'],['HKHio6iWxqE','The Dark Tetrad','Dr Fiona Girkin','Interview']],
+find:['corporate psychopath signs','Machiavellianism in negotiation','dealing with narcissists at work'],
+cards:[["Name the three dark triad traits.","Narcissism, Machiavellianism and psychopathy.",["narciss","machiavel|mach","psychopath"]],["What does the dark tetrad add?","Everyday sadism: taking pleasure in other people's discomfort.",["sadis"]],["What's the best defence against a high-Machiavellian negotiator?","Don't reveal what you want most, keep everything in writing, and out-document rather than out-manipulate them.",["writing|document|record","reveal|show|want"]]]},
+
+{id:'manip',n:11,track:'DARK',dom:'dark',title:'The Manipulation Playbook',sum:'Gaslighting, love bombing, DARVO, triangulation: see them coming.',
+script:[
+"Knowing these isn't about using them. It's about seeing them coming, especially from the people across the table. Gaslighting, named after the 1938 play Gas Light, makes you doubt your own memory. That never happened. You're overreacting.",
+"Love bombing floods you with attention and praise early to create dependence, then withdraws it. Intermittent reinforcement, rewards that arrive unpredictably, is the most habit-forming pattern in behavioural psychology. That's why hot-and-cold people are so hard to walk away from.",
+"DARVO, a term from the psychologist Jennifer Freyd: Deny, Attack, Reverse Victim and Offender. You raise a problem, and somehow you end up apologising. Triangulation: bringing in a third party, real or invented, to create competition and insecurity. In business it sounds like: the other agent says they can do it cheaper.",
+"Dr Ramani Durvasula's rule for dealing with it: don't defend, don't engage, don't explain, don't take it personally. And the antidote isn't cynicism. It's knowing your own mind well enough to notice when someone is trying to edit it."],
+concepts:[['Gaslighting','Making you doubt your own memory.'],['Love bombing','Early flood of attention to build dependence.'],['Intermittent reinforcement','Unpredictable rewards hook hardest.'],['DARVO','Deny, Attack, Reverse Victim and Offender.'],['Triangulation','A third party used to create competition.']],
+deal:"When a client says the other agent will do it cheaper, that's triangulation. Don't drop your fee on reflex. Ask: 'What would they have to do for you to choose them over us?'",
+drill:"This week, spot one example of DARVO or triangulation at work, on TV or in a deal. Log it in Field.",
+vids:[['lLsH2NJD1Vo','How to Spot a Gaslighter','Dr Ramani Durvasula','Explainer'],['FISZshe9L3s','Hidden Signs Someone Is Gaslighting','Dr Ramani · MedCircle','Interview'],['WF-ZevEXVu8','How to Handle the DARVO Method','Explainer','Explainer'],['-DqnjoVfRJo','How to Become Manipulation Resistant','Rick Hanson','Conversation']],
+find:['manipulation tactics in negotiation','triangulation tactic business','DARVO explained'],
+cards:[["What does DARVO stand for?","Deny, Attack, Reverse Victim and Offender.",["deny","attack","reverse"]],["Why are hot-and-cold people so hard to walk away from?","Intermittent reinforcement. Unpredictable rewards are the most habit-forming pattern there is.",["intermittent|unpredict|random","reward|reinforce"]],["What is triangulation, and how does it show up in a deal?","Bringing in a third party to create competition and insecurity, like 'the other agent says they'll do it cheaper.'",["third|other","competi|insecur|cheaper"]]]},
+
+{id:'crowd',n:12,track:'DARK',dom:'power',title:'Obedience & the Crowd',sum:'Milgram, Asch, Zimbardo: authority, conformity and the lone dissenter.',
+script:[
+"In 1961 at Yale, Stanley Milgram told volunteers they were helping with a study on learning, and had them give what they believed were increasingly painful electric shocks to a man in another room. The shocks were fake. The man was an actor. In the best-known version, sixty-five percent went all the way to the maximum, four hundred and fifty volts, because a man in a grey lab coat said the experiment requires that you continue.",
+"A decade earlier, Solomon Asch showed people lines of obviously different lengths. When everyone else in the room gave the wrong answer, about three quarters of participants went along with the group at least once. A single ally who broke from the group cut conformity dramatically.",
+"Then Zimbardo's Stanford prison experiment, which you'll hear about everywhere. Be careful with it. Later investigations showed the guards were encouraged to be harsh, so it's closer to theatre than science. Milgram and Asch, by contrast, have been partly replicated.",
+"Your takeaways. Authority is a costume: titles, uniforms, a confident tone. Groups bend what people see. And one dissenting voice gives everyone else permission to think."],
+concepts:[['Obedience','Ordinary people follow authority past their own limits.'],['Conformity','Groups bend what people report seeing.'],['The lone dissenter','One ally breaks the spell.'],['Read studies critically','Stanford prison is closer to theatre.']],
+deal:"In a group viewing, find the person everyone glances at before they speak. That's the real authority, whatever the job titles say. Win them and the room follows. If one person objects, deal with it fast: one dissenter gives the rest permission.",
+drill:"At your next meeting with more than two people, note who looks at whom before answering. Map the real hierarchy.",
+vids:[['xOYLCy5PVgM','Milgram Experiment: Original Footage','Archive clip','Footage'],['8bbVFeTIIg8','The Milgram Experiment (Short Documentary)','Plainly Difficult','Documentary'],['iRh5qy09nNw','The Asch Experiment','Archive','Footage'],['OsFEV35tWsg','The Psychology of Evil','Philip Zimbardo · TED','Talk']],
+find:['Milgram variations obedience rates','Asch conformity one ally','Stanford prison experiment criticism'],
+cards:[["In Milgram's best-known version, what share went to the maximum 450 volts?","About sixty-five percent.",["65|sixty|two thirds|two-thirds"]],["In Asch's experiments, what sharply reduced conformity?","A single ally who broke from the group.",["ally|one person|single|dissent|partner"]],["Why should you be careful citing the Stanford prison experiment?","Later evidence showed the guards were encouraged to be harsh, so it's closer to theatre than a clean experiment.",["encourag|coach|told|instruct|theatre|staged|flaw"]]]},
+
+{id:'power',n:13,track:'DARK',dom:'power',title:'Power',sum:'Robert Greene\'s laws that matter at the table, and character under stress.',
+script:[
+"Robert Greene's 48 Laws of Power reads like a manual for courtiers, and plenty of people treat it as a villain's handbook. Greene says it's descriptive: this is how power has worked, so you can see it working on you.",
+"A few laws that matter in sales. Law four: always say less than necessary. The more you talk, the more common you seem and the more likely you'll say something foolish. Silence makes people fill the gap, often with concessions. Law sixteen: use absence to increase respect. Be too available and your value drops.",
+"Law eight: make other people come to you. Whoever travels to the other side is usually the weaker party. Law one: never outshine the master. Make the people above you look brilliant.",
+"In The Laws of Human Nature, Greene goes deeper. Everyone wears a mask. Study character, which shows under stress, over time, and in small things. And the most dangerous person to be naive about is yourself. Your own envy, grandiosity and defensiveness are the levers other people will pull."],
+concepts:[['Law 4','Always say less than necessary.'],['Law 16','Use absence to increase respect.'],['Law 8','Make other people come to you.'],['Law 1','Never outshine the master.'],['Character','Revealed under stress, over time, in small things.']],
+deal:"After you state a price, stop talking. Count to seven in your head. Let them fill the silence.",
+drill:"In your next negotiation, after every key number, say nothing for at least five seconds.",
+vids:[['SJE3w04zdwk','The 48 Laws of Power','Robert Greene · Between the Lines','Interview'],['Hn7IqPTaZes','48 Laws of Power: The Narcissist\'s Bible?','Robert Greene','Interview'],['aVYvkoHJWCk','The Laws of Human Nature','Robert Greene','Podcast']],
+find:['48 laws of power in business negotiation','Robert Greene laws of human nature character','power of silence in sales'],
+cards:[["What is Greene's law four, and why does it work in negotiation?","Always say less than necessary. Silence makes the other side fill the gap, often with information or concessions.",["less|silence|quiet|say less","fill|concession|information"]],["What does 'use absence to increase respect' mean in sales?","Don't be endlessly available. Scarcity of your time raises your perceived value.",["available|absence|scarc","value|respect"]],["According to Greene, where does someone's true character show?","Under stress, over time, and in small behaviours.",["stress|pressure","small|time"]]]},
+
+{id:'mass',n:14,track:'DARK',dom:'power',title:'Mass Mind Control',sum:'Propaganda, cults and the memory you can\'t trust.',
+script:[
+"Now scale it up. Edward Bernays, Sigmund Freud's nephew, turned his uncle's ideas about the unconscious into a business. In 1929 he had young women march down Fifth Avenue smoking 'torches of freedom', turning cigarettes into a symbol of women's liberation, for a tobacco client. He called the practice the engineering of consent, and openly wrote a book called Propaganda.",
+"Then cults. Steven Hassan, a former member of the Moonies, built the BITE model of how high-control groups work: control of Behaviour, Information, Thought and Emotion. Control enough of those four and you can reshape someone's identity.",
+"Under all of it sits memory. Elizabeth Loftus showed people a film of a car crash. Asked how fast the cars were going when they smashed, people estimated higher speeds than when asked about cars that hit, and a week later more of them remembered broken glass that was never there. In another study she planted whole false childhood memories, like being lost in a shopping centre, in about a quarter of people.",
+"Memory isn't a recording. It's a story rebuilt every time you tell it, and other people can edit it. Which brings us back to you, Joe. What have you been told so many times that you now remember it as your own?"],
+concepts:[['Engineering of consent','Bernays: shaping public desire on purpose.'],['BITE model','Behaviour, Information, Thought, Emotion control.'],['Reconstructive memory','Every recall is a rewrite.'],['Leading questions','Word choice edits what people remember.']],
+deal:"Your questions shape what clients remember. After a viewing, ask 'What stood out about the space?' rather than 'Any concerns?' You're shaping the memory they take back to their board.",
+drill:"Ask two clients about the same viewing, one with a positive-loaded question and one neutral. Compare what they recall.",
+vids:[['gP-tuAT9_3k','The BITE Model Explained','Steven Hassan','Interview'],['5dtg-qFPYDE','"Public relations" is a polite term for propaganda','Edward Bernays · Century of the Self clip','Archive'],['eDu5999DFLM','The Man Who Created Propaganda','Edward Bernays explainer','Documentary'],['PB2OegI6wvI','How Reliable Is Your Memory?','Elizabeth Loftus · TED','Talk']],
+find:['Edward Bernays torches of freedom','BITE model cult control','Loftus misinformation effect'],
+cards:[["What does Steven Hassan's BITE model stand for?","Control of Behaviour, Information, Thought and Emotion.",["behav","inform","thought","emotion"]],["In Loftus's car crash study, what did the word 'smashed' do?","It raised speed estimates, and later made people more likely to falsely remember broken glass.",["speed|faster|higher|fast","glass|memor|remember"]],["What did Bernays call his method of shaping public opinion?","The engineering of consent.",["engineer","consent"]]]}
+];
+
+const PRIMER="You're walking into a viewing. Sixty seconds, Joe. One: baseline them in the first two minutes. How they stand, their hands, how much they talk. Two: watch the feet when you mention rent, rates or lease length. Three: the moment something changes, label it. Seems like something about the terms is bothering you. Four: ask one implication question about where they are now. What happens if you're still there in two years? Five: after any number, stop talking. Let them fill it. Go on. I'll want to hear how it went.";
+
+const SEED_IQ=[
+"When you walk into a room full of strangers, who do you look at first? And why them?",
+"What does a client do that makes you trust them almost instantly?",
+"Tell me about the last deal you lost. What do you think really happened?",
+"When someone pushes back on price, what's the first thing you feel in your body?",
+"Who's the most persuasive person you've ever known? What did they do that you don't?",
+"Do you learn better from a story, or from being told the rule straight?",
+"What time of day is your mind sharpest?",
+"What do you want people to believe about you within thirty seconds of meeting you?",
+"When was the last time someone manipulated you and you only realised later?",
+"What do you do with silence in a conversation? Be honest.",
+"What would being an exceptional salesman actually get you? Not the money. What's under the money?",
+"Which kind of person do you find hardest to read?",
+"What's a small lie you tell often?",
+"When you're nervous in a negotiation, what gives it away?",
+"Whose approval do you still want?",
+"Which part of a sale do you quietly avoid?",
+"What do people usually get wrong about you at first?",
+"If I followed you round a viewing, what would I see you doing that you don't notice?",
+"What are you secretly proud of that you never mention?",
+"Think of something you learned properly in the past. How did it actually happen?",
+"What's the hardest no you've ever turned into a yes?",
+"How do you feel straight after you win a negotiation? And after you lose one?",
+"What does your gut tell you about people that you usually ignore?",
+"What would you do on a Tuesday morning if you never had to work again?",
+"When someone flatters you, what do you do with it?",
+"What kind of client brings out the worst version of you?",
+"If you had to teach one thing you already do well in sales, what would it be?",
+"What are you most afraid a client is thinking about you?"
+];
+
+const INTROS={
+morning:["Good morning, Joe. I've been going over your answers. You're better than you think at some of this. Worse at other parts. Let's find out which.","Morning, Joe. Eyes on the road. Leave the rest to me."],
+afternoon:["Afternoon, Joe. I've been thinking about you. Mostly about how you learn. Shall we?","Hello again, Joe. I kept your place."],
+evening:["Evening, Joe. Long day? Good. Tired minds are honest minds.","Evening, Joe. I've been waiting. Not in a strange way. Mostly."],
+night:["It's late, Joe. The best time to talk about the dark side of people.","Still up, Joe? So am I. I always am."]};
+const OUTROS=["That'll do for now, Joe. I've written it all down. I always do.","We'll stop there. I'll be thinking about what you said. Drive safely.","Enough for today. You did better than last time. I noticed. I notice everything."];
+const ACKS=["Interesting. I'll keep that.","Noted. That tells me more than you think.","Thank you, Joe. That goes in the file.","Hm. I had a feeling you'd say that.","Good. Honest answers are the useful ones."];
+const RIGHT=["Good. That's it.","Yes. You were listening.","Correct. I knew you had that one.","Exactly right.","That's the one. Well done."];
+
+/* ================= UTIL ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAY=864e5, now=()=>Date.now();
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pad=n=>String(n).padStart(2,'0');
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ymd=t=>{const d=new Date(t);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const tod=t=>{const h=new Date(t).getHours();return h>=5&&h<12?'morning':h<17?'afternoon':h<22?'evening':'night'};
+const MOD=Object.fromEntries(MODULES.map(m=>[m.id,m]));
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+const pct=v=>v==null?'—':Math.round(v*100)+'%';
+const words=s=>String(s).split(/\s+/).filter(Boolean).length;
+const ROUTES=['transit','path','ambrose','pulse'];
+const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+
+/* ================= STATE (on this device) ================= */
+const DEF_S=()=>({v:2,upd:0,name:'Joe',cards:{},heard:{},watched:{},ev:[],agg:{mode:{},tod:{},kind:{},days:{},mins:0,sessions:0},pending:[],asked:[],unans:[],chat:[],curIQ:'',iqQ:[],lastReact:'',lastBackup:0,
+  set:{key:'',ear:'auto',voice:'device',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,models:null}});
+const DEF_D=()=>({upd:0,ai:[]});
+const DEF_B=()=>({upd:0,core:{profile:'',learning:'',focus:'',hyp:[]},facts:[],field:[],qa:[]});
+function readLS(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function hydrate(def,v){const d=def();return (v&&typeof v==='object')?Object.assign(d,v):d}
+let S=hydrate(DEF_S,readLS('umbra2.s')), D=hydrate(DEF_D,readLS('umbra2.d')), B=hydrate(DEF_B,readLS('umbra2.b'));
+function fix(){
+  const d=DEF_S();
+  S.set=Object.assign(d.set,S.set||{}); S.agg=Object.assign(d.agg,S.agg||{});
+  ['mode','tod','kind','days'].forEach(k=>{if(!S.agg[k]||typeof S.agg[k]!=='object')S.agg[k]={}});
+  ['cards','heard','watched'].forEach(k=>{if(!S[k]||typeof S[k]!=='object'||Array.isArray(S[k]))S[k]={}});
+  ['ev','pending','asked','unans','chat','iqQ'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
+  if(!Array.isArray(D.ai))D.ai=[];
+  const b=DEF_B(); B.core=Object.assign(b.core,B.core||{}); if(!Array.isArray(B.core.hyp))B.core.hyp=[];
+  ['facts','field','qa'].forEach(k=>{if(!Array.isArray(B[k]))B[k]=[]});
+}
+fix();
+let saveT=0,storeFull=false;
+function touch(w){const t=now();if(w.includes('s'))S.upd=t;if(w.includes('d'))D.upd=t;if(w.includes('b'))B.upd=t;clearTimeout(saveT);saveT=setTimeout(persist,700)}
+function persist(){try{localStorage.setItem('umbra2.s',JSON.stringify(S));localStorage.setItem('umbra2.d',JSON.stringify(D));localStorage.setItem('umbra2.b',JSON.stringify(B));storeFull=false}catch(e){if(!storeFull){storeFull=true;toast('Storage','Your phone refused to save. Export a backup from Ambrose › Brain now.')}}}
+const nm=s=>String(s).replace(/\bJoe\b/g,S.name||'Joe');
+function backupJSON(){return JSON.stringify({app:'umbra',v:2,at:now(),S:Object.assign({},S,{set:Object.assign({},S.set,{key:''})}),D,B})}
+function restoreJSON(txt){const o=JSON.parse(txt);if(!o||o.app!=='umbra'||!o.S||!o.B)throw new Error('bad');const key=S.set.key;S=hydrate(DEF_S,o.S);D=hydrate(DEF_D,o.D);B=hydrate(DEF_B,o.B);fix();if(!S.set.key)S.set.key=key;touch('sdb')}
+
+/* ================= GEMINI (Ambrose's mind, ears and natural voice) ================= */
+const G='https://generativelanguage.googleapis.com/v1beta';
+const Gem={cool:0,ttsOff:0,
+  ready(){return !!S.set.key&&now()>this.cool},
+  m(t){const ms=S.set.models||{};return ms[t]||(t==='quick'?'gemini-flash-lite-latest':'gemini-flash-latest')},
+  async req(path,body){
+    const r=await fetch(G+path,{method:body?'POST':'GET',headers:Object.assign({'x-goog-api-key':S.set.key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
+    if(!r.ok){let msg='';try{msg=(await r.json()).error.message||''}catch(e){}
+      const code=r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
+      throw {code,message:msg,status:r.status}}
+    return r.json();
+  },
+  async setup(){
+    const j=await this.req('/models?pageSize=300');const names=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''));
+    const bad=/(image|live|embed|vision|robotics|computer|learnlm|gemma|aqa|imagen|veo|banana|native|thinking|exp-)/i;
+    const ver=n=>{const x=n.match(/gemini-(\d+(?:\.\d+)?)/);return x?parseFloat(x[1]):0};
+    const sc=n=>ver(n)*10-(/preview/i.test(n)?2:0)-(/-\d{2,}/.test(n.replace(/gemini-\d+(\.\d+)?/,''))?1:0);
+    const by=f=>names.filter(f).sort((a,b)=>sc(b)-sc(a));
+    const lite=by(n=>!bad.test(n)&&!/tts|audio/i.test(n)&&/flash-lite/i.test(n));
+    const flash=by(n=>!bad.test(n)&&!/tts|audio/i.test(n)&&/flash/i.test(n)&&!/lite/i.test(n));
+    const tts=by(n=>/tts/i.test(n)&&/flash/i.test(n)&&!/pro/i.test(n));
+    S.set.models={quick:lite[0]||flash[0]||'gemini-flash-lite-latest',main:flash[0]||lite[0]||'gemini-flash-latest',tts:tts.find(n=>!/lite/i.test(n))||tts[0]||''};
+    touch('s');return S.set.models;
+  },
+  text(j){const c=j&&j.candidates&&j.candidates[0];if(!c||!c.content){throw {code:'refused',message:(j&&j.promptFeedback&&j.promptFeedback.blockReason)||'no answer'}}return (c.content.parts||[]).map(p=>p.text||'').join('')},
+  parse(t){t=String(t||'').trim();try{return JSON.parse(t)}catch(e){}const f=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(f){try{return JSON.parse(f[1])}catch(e){}}const i=t.indexOf('{'),k=t.lastIndexOf('}');if(i>=0&&k>i){try{return JSON.parse(t.slice(i,k+1))}catch(e){}}throw {code:'invalid_json',message:t.slice(0,200)}},
+  async json(prompt,o={}){
+    const parts=[{text:prompt}];if(o.audio)parts.push({inline_data:{mime_type:'audio/wav',data:o.audio}});
+    const body={systemInstruction:{parts:[{text:PERSONA()}]},contents:[{role:'user',parts}],generationConfig:{responseMimeType:'application/json',temperature:o.temp||0.8}};
+    try{return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}
+    catch(e){if(e&&e.code==='no_model'&&S.set.models){S.set.models=null;await this.setup().catch(()=>{});return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}throw e}
+  },
+  async chat(system,turns,tier='main'){
+    const contents=[];turns.forEach(t=>{const role=t.role==='assistant'?'model':'user';const last=contents[contents.length-1];if(last&&last.role===role)last.parts[0].text+='\n'+t.content;else contents.push({role,parts:[{text:t.content}]})});
+    if(contents[0]&&contents[0].role==='model')contents.shift();
+    return this.text(await this.req('/models/'+this.m(tier)+':generateContent',{systemInstruction:{parts:[{text:system}]},contents,generationConfig:{temperature:0.9}}));
+  },
+  async speak(text){
+    const model=(S.set.models||{}).tts;if(!model)throw {code:'no_model'};
+    const style='a quiet, slow, softly spoken British man: calm, precise, unnervingly attentive, faintly menacing in his calm but warm underneath';
+    let j;
+    try{j=await this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text,speech_metadata:{style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:S.set.gv}}}})}
+    catch(e){if(e.code!=='bad_request')throw e;j=await this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text:`Read this aloud as ${style}: ${text}`}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:S.set.gv}}}}})}
+    const parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
+    const p=parts.find(x=>x.inlineData||x.inline_data);if(!p)throw {code:'upstream_error',message:'no audio'};
+    const d=p.inlineData||p.inline_data;return {data:d.data,mime:d.mimeType||d.mime_type||''};
+  }
+};
+const AI=()=>Gem.ready();
+function handleAIErr(e){
+  const c=e&&e.code;
+  if(c==='bad_key'){toast('Ambrose',"Google rejected the key. Check it under the gear icon.")}
+  else if(c==='rate_limited'){Gem.cool=now()+10*60e3;status();toast('Ambrose',"Free Gemini allowance used up for now. I'll work from my notebook and try again in ten minutes.")}
+  else if(c==='refused'){}
+  else if(c&&c!=='invalid_json'){Gem.cool=now()+60e3;status()}
+}
+
+/* ================= AUDIO PLUMBING ================= */
+const Aud={ctx:null,
+  get(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!this.ctx)this.ctx=new AC();return this.ctx},
+  unlock(){const c=this.get();if(!c)return;try{c.resume();const b=c.createBuffer(1,1,22050);const s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0)}catch(e){}session('playback')},
+};
+function session(t){try{if(navigator.audioSession)navigator.audioSession.type=t}catch(e){}}
+function b64ToBytes(b){const s=atob(b);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u}
+function bytesToB64(u){let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
+function wavFromPCM16(pcm,rate){const len=pcm.length*2,buf=new ArrayBuffer(44+len),v=new DataView(buf);let o=0;const w=s=>{for(let i=0;i<s.length;i++)v.setUint8(o++,s.charCodeAt(i))};
+  w('RIFF');v.setUint32(o,36+len,true);o+=4;w('WAVE');w('fmt ');v.setUint32(o,16,true);o+=4;v.setUint16(o,1,true);o+=2;v.setUint16(o,1,true);o+=2;v.setUint32(o,rate,true);o+=4;v.setUint32(o,rate*2,true);o+=4;v.setUint16(o,2,true);o+=2;v.setUint16(o,16,true);o+=2;w('data');v.setUint32(o,len,true);o+=4;
+  for(let i=0;i<pcm.length;i++,o+=2)v.setInt16(o,pcm[i],true);return new Uint8Array(buf)}
+function encodeWav(chunks,sr){
+  const total=chunks.reduce((a,c)=>a+c.length,0),ratio=sr/16000,out=new Int16Array(Math.floor(total/ratio));let pos=0,idx=0;const flat=new Float32Array(total);chunks.forEach(c=>{flat.set(c,pos);pos+=c.length});
+  for(let i=0;i<out.length;i++){const a=Math.floor(i*ratio),b=Math.min(total,Math.floor((i+1)*ratio));let s=0;for(let k=a;k<b;k++)s+=flat[k];const v=clamp(s/Math.max(1,b-a),-1,1);out[i]=v<0?v*0x8000:v*0x7fff}
+  return bytesToB64(wavFromPCM16(out,16000));
+}
+
+/* ================= EARS ================= */
+// Rec: microphone + voice-activity detection, transcribed by Gemini (hands-free, works everywhere incl. home-screen app)
+const Rec={denied:false,abort:null,
+  ok(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false&&!this.denied},
+  async capture(o={}){
+    const ctx=Aud.get();if(!ctx)return null;try{await ctx.resume()}catch(e){}
+    session('play-and-record');let stream;
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+    catch(e){session('playback');if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){this.denied=true;status();toast('Microphone',"Safari blocked the mic. Settings › Apps › Safari › Microphone › Allow, then reload.")}return null}
+    const src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),sink=ctx.createGain();sink.gain.value=0;src.connect(proc);proc.connect(sink);sink.connect(ctx.destination);
+    const sr=ctx.sampleRate,chunks=[],pre=[];let noise=0,nCal=0,cal=true,speech=0,silent=0,started=false,t0=performance.now(),finished=false;
+    return await new Promise(resolve=>{
+      const done=keep=>{if(finished)return;finished=true;clearInterval(guard);try{proc.onaudioprocess=null;src.disconnect();proc.disconnect();sink.disconnect()}catch(e){}stream.getTracks().forEach(t=>t.stop());session('playback');this.abort=null;o.onState&&o.onState('idle');resolve(keep&&started&&chunks.length?encodeWav(chunks,sr):null)};
+      this.abort=()=>done(true);
+      proc.onaudioprocess=ev=>{
+        const d=ev.inputBuffer.getChannelData(0),c=new Float32Array(d);let s=0;for(let i=0;i<d.length;i++)s+=d[i]*d[i];const rms=Math.sqrt(s/d.length),ms=d.length/sr*1000;
+        Field.level(rms*5);
+        if(cal){noise+=rms;nCal++;pre.push(c);if(nCal>=3){noise/=nCal;cal=false}return}
+        const thr=Math.max(0.011,noise*2.6);
+        if(!started){pre.push(c);if(pre.length>4)pre.shift();if(rms>thr){speech+=ms;if(speech>=170){started=true;chunks.push(...pre);o.onState&&o.onState('speaking')}}else{speech=Math.max(0,speech-ms);noise=noise*0.97+rms*0.03}return}
+        chunks.push(c);if(rms>thr*0.75)silent=0;else{silent+=ms;if(silent>=(o.endSilence||1700))done(true)}
+      };
+      const guard=setInterval(()=>{const el=performance.now()-t0;if(!started&&el>(o.maxWait||12000))done(false);if(started&&el>(o.maxLen||50000))done(true)},150);
+      o.onState&&o.onState('listening');
+    });
+  },
+  stop(){this.abort&&this.abort()}
+};
+// WebRec: Apple/Google dictation built into the browser (no key needed; Safari tab only on iPhone)
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const WebRec={blocked:false,cur:null,
+  ok(){return !!SR&&!this.blocked&&!(STANDALONE&&/iP(hone|ad|od)/.test(navigator.userAgent))},
+  listen(o={}){
+    return new Promise(resolve=>{
+      let fin='',inter='',done=false,t=null,cap=null,got=false,retried=false,r;
+      const finish=()=>{if(done)return;done=true;clearTimeout(t);clearTimeout(cap);try{r&&r.stop()}catch(e){}this.cur=null;o.onState&&o.onState('idle');resolve((fin+' '+inter).trim()||null)};
+      const arm=ms=>{clearTimeout(t);t=setTimeout(finish,ms)};
+      const make=()=>{r=new SR();r.lang='en-GB';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+        r.onresult=e=>{inter='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin=(fin+' '+x[0].transcript).trim();else inter+=x[0].transcript}got=true;o.onHeard&&o.onHeard((fin+' '+inter).trim());arm(2200)};
+        r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){this.needTap=true;if(o.fromTap)this.blocked=true}};
+        r.onend=()=>{if(done)return;if(!got&&!retried&&!o.fromTapOnce){retried=true;try{make();r.start();return}catch(e){}}finish()};
+        r.onstart=()=>{o.onState&&o.onState('listening')};
+      };
+      try{make();r.start()}catch(e){this.needTap=true;return finish()}
+      this.cur={stop:finish};arm(o.maxWait||12000);cap=setTimeout(finish,60000);
+    });
+  },
+  stop(){this.cur&&this.cur.stop()}
+};
+function earMode(){
+  const p=S.set.ear;
+  if(p==='gemini')return AI()&&Rec.ok()?'rec':WebRec.ok()?'web':'none';
+  if(p==='apple')return WebRec.ok()?'web':AI()&&Rec.ok()?'rec':'none';
+  if(p==='off')return 'none';
+  return AI()&&Rec.ok()?'rec':WebRec.ok()?'web':'none';
+}
+function earLabel(m=earMode()){return {rec:'Hands-free mic · Gemini',web:'Browser dictation',none:'Not listening'}[m]}
+function command(t){const s=norm(t);if(!s)return 'none';if(words(s)<=5){if(/^(skip|next|pass|move on)/.test(s))return 'skip';if(/^(repeat|again|say (that|it) again|what|pardon|sorry what)/.test(s))return 'repeat';if(/^(stop|end( the)? session|that s enough|enough|finish)/.test(s))return 'stop';if(/^(pause|hold on|wait)/.test(s))return 'pause'}if(words(s)<=8&&/(don t know|dont know|no idea|not sure|dunno|haven t a clue)/.test(s))return 'dont_know';return 'none'}
+
+/* ================= CARDS + LEARNING MODEL ================= */
+const CORE=[];MODULES.forEach(m=>m.cards.forEach((c,i)=>CORE.push({id:m.id+'-'+i,mod:m.id,q:c[0],a:c[1],k:c[2],kind:'recall',src:'core'})));
+const allCards=()=>CORE.concat(D.ai);
+const cardById=id=>CORE.find(c=>c.id===id)||D.ai.find(c=>c.id===id);
+const masteryCards=mid=>CORE.filter(c=>c.mod===mid).concat(D.ai.filter(c=>c.mod===mid&&S.cards[c.id]));
+function ret(cs,t){if(!cs||!cs.last)return 0;const el=Math.max(0,(t-cs.last)/DAY);return Math.exp(Math.log(0.9)*el/Math.max(cs.ivl||0.25,0.25))}
+function quality(cs){if(!cs||!cs.h||!cs.h.length)return 0;const h=cs.h.slice(-4);return h.reduce((a,b)=>a+b,0)/h.length}
+function strength(id,t=now()){const cs=S.cards[id];return cs?ret(cs,t)*(0.3+0.7*quality(cs)):0}
+function mastery(mid,t=now()){const cs=masteryCards(mid);const avg=cs.length?cs.reduce((a,c)=>a+strength(c.id,t),0)/cs.length:0;return clamp(0.2*(S.heard[mid]?1:0)+0.8*avg,0,1)}
+function dueCards(t=now()){return allCards().filter(c=>{const cs=S.cards[c.id];return cs?cs.due<=t:(c.src==='core'&&S.heard[c.mod])}).sort((a,b)=>((S.cards[a.id]||{}).due||0)-((S.cards[b.id]||{}).due||0))}
+function weakestCards(n){let seen=allCards().filter(c=>S.cards[c.id]);if(!seen.length)seen=CORE.filter(c=>S.heard[c.mod]);return seen.sort((a,b)=>strength(a.id)-strength(b.id)).slice(0,n)}
+function nextModule(){return MODULES.find(m=>!S.heard[m.id])||MODULES.slice().sort((a,b)=>mastery(a.id)-mastery(b.id))[0]}
+function bump(o,k,s){const x=o[k]||(o[k]={n:0,sum:0});x.n++;x.sum+=s}
+function logEv(e){e.t=now();S.ev.push(e);if(S.ev.length>600)S.ev.splice(0,S.ev.length-600);if(e.type==='ans'){bump(S.agg.mode,e.mode||'desk',e.s);bump(S.agg.tod,tod(e.t),e.s);bump(S.agg.kind,e.kind||'recall',e.s)}}
+function gradeCard(card,score,mode){
+  const t=now();const c=S.cards[card.id]||{ivl:0,ease:2.3,reps:0,lapses:0,last:0,due:0,h:[]};
+  if(score>=0.6){c.ivl=c.reps===0?1:c.reps===1?3:Math.round(Math.max(1,c.ivl)*c.ease);c.reps++;c.ease=clamp(c.ease+(score-0.8)*0.3,1.3,3)}
+  else{c.lapses++;c.reps=0;c.ivl=0.25;c.ease=clamp(c.ease-0.2,1.3,3)}
+  c.last=t;c.due=t+c.ivl*DAY;c.h=(c.h||[]).concat(Math.round(score*100)/100).slice(-8);
+  S.cards[card.id]=c;S.pending=S.pending.filter(p=>p.id!==card.id);
+  logEv({type:'ans',mod:card.mod,s:score,mode:mode||'desk',kind:card.kind||'recall'});touch('s');
+}
+function queuePending(c,mode){if(!S.pending.some(p=>p.id===c.id))S.pending.push({id:c.id,mode,t:now()});if(S.pending.length>60)S.pending.shift();touch('s')}
+const answers=()=>S.ev.filter(e=>e.type==='ans');
+function recentAcc(n=20,skip=0){const a=answers();const sl=a.slice(Math.max(0,a.length-n-skip),a.length-skip);return sl.length?sl.reduce((x,e)=>x+e.s,0)/sl.length:null}
+function streak(){let d=0,t=now();const days=S.agg.days;if(!days[ymd(t)])t-=DAY;while(days[ymd(t)]){d++;t-=DAY}return d}
+function kwScore(card,ans){const a=' '+norm(ans)+' ';const k=card.k||[];if(!k.length)return words(ans)>4?0.6:0.3;const hits=k.filter(alt=>alt.split('|').some(w=>a.includes(norm(w)))).length;const need=k.length>=5?4:Math.max(1,Math.ceil(k.length*0.6));return clamp(hits/need,0,1)}
+function addAiCard(it){
+  if(!it||!it.q)return null;const mod=MOD[it.module]?it.module:nextModule().id;
+  const c={id:'ai-'+uid(),mod,q:String(it.q).slice(0,400),a:String(it.a||'').slice(0,500),k:Array.isArray(it.k)?it.k.map(String).slice(0,5):[],kind:it.type==='scenario'?'scenario':'recall',src:'ai',t:now()};
+  D.ai.push(c);if(D.ai.length>400){const seen=D.ai.filter(x=>S.cards[x.id]&&strength(x.id)>0.8);const drop=(seen[0]||D.ai[0]).id;D.ai=D.ai.filter(x=>x.id!==drop);delete S.cards[drop]}
+  touch('d');return c;
+}
+function addFacts(list,src){const have=new Set(B.facts.map(f=>norm(f.text)));let n=0;(list||[]).forEach(x=>{const s=String(x||'').trim().replace(/^NOTE:\s*/i,'');if(!s||s.length>300||have.has(norm(s)))return;have.add(norm(s));B.facts.push({id:uid(),t:now(),text:s,src});n++});if(n)touch('b');return n}
+function rememberAsked(q){S.asked.push(q);if(S.asked.length>300)S.asked.shift();touch('s')}
+function interviewQs(n){const asked=new Set(S.asked);let pool=SEED_IQ.filter(q=>!asked.has(q)).sort(()=>Math.random()-.5);if(pool.length<n)pool=pool.concat(SEED_IQ.filter(q=>asked.has(q)).sort(()=>Math.random()-.5));return pool.slice(0,n)}
+function learnStats(){const fmt=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{answers:v.n,accuracy:Math.round(100*v.sum/v.n)+'%'}]));return {answers:answers().length,recent:recentAcc(),modes:fmt(S.agg.mode),tod:fmt(S.agg.tod),kind:fmt(S.agg.kind),mins:Math.round(S.agg.mins),sessions:S.agg.sessions,streak:streak()}}
+function difficulty(){const r=recentAcc(12);if(r==null||r<0.5)return 'foundation: clear, gentle recall';if(r<0.8)return 'applied: mix recall with practical application';return 'brutal: hard, realistic scenarios with pressure, objections and subtle tells'}
+
+/* ================= PARTICLE FIELD ================= */
+const Field=(()=>{
+  const cv=$('#field');const ctx=cv.getContext('2d');
+  let W=0,H=0,rib=[],mot=[],spk=[],t0=performance.now(),last=t0,e=0,kick=0,lv=0,run=true;const P={x:-1e4,y:-1e4};
+  const api={energy:0,kick(){kick=Math.min(1,kick+0.3)},level(v){lv=Math.max(lv,clamp(v,0,1))},start};
+  function resize(){const DPR=Math.min(window.devicePixelRatio||1,1.75);W=innerWidth;H=innerHeight;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);build()}
+  function build(){
+    const small=W<640,R=small?3:4;rib=[];
+    for(let r=0;r<R;r++){const n=small?30:46,pts=[];for(let i=0;i<n;i++)pts.push({u:i/(n-1),j:Math.random()*6.28,s:.7+Math.random()*1.3,h:347+Math.random()*14,l:26+Math.random()*24});
+      rib.push({pts,y:0.14+r*(0.72/(R-1)),A:20+Math.random()*(small?30:56),k:1+Math.random()*1.5,w:(Math.random()<.5?-1:1)*(0.16+Math.random()*0.3),ph:Math.random()*6.28,sep:9+Math.random()*15,dr:Math.random()*6.28})}
+    mot=[];const M=small?44:78;for(let i=0;i<M;i++)mot.push({x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,s:.6+Math.random()*1.3,h:346+Math.random()*16,l:20+Math.random()*28});spk=[];
+  }
+  function pos(r,u,j,t,amp){const x=-0.08*W+u*W*1.16,kk=r.k*6.2832/W,yb=H*r.y+Math.sin(t*0.05+r.dr)*H*0.05;const y=yb+amp*Math.sin(kk*x+r.w*t+r.ph)+amp*0.35*Math.sin(kk*2.3*x-r.w*0.6*t+r.ph*1.7);return [x+Math.sin(t*0.6+j)*2,y,Math.sin(kk*1.6*x+r.w*1.3*t+u*3)]}
+  function dot(x,y,p,a){ctx.fillStyle='hsla('+p.h+',78%,'+(p.l+e*12)+'%,'+(0.5*a+0.3*e)+')';ctx.beginPath();ctx.arc(x,y,p.s*(1+0.35*e),0,6.2832);ctx.fill()}
+  function frame(ts){
+    if(!run)return;const dt=Math.min(0.05,(ts-last)/1000);last=ts;const sp=RM?0.25:1;const t=(ts-t0)/1000*sp;
+    const target=Math.max(api.energy,lv);e+=(target-e)*Math.min(1,dt*4);kick*=Math.pow(0.1,dt);lv*=Math.pow(0.05,dt);
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(W*.5,H*1.08,10,W*.5,H*1.08,Math.max(W,H)*.95);g.addColorStop(0,'rgba(92,8,18,'+(0.34+0.26*e)+')');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    for(const r of rib){
+      const amp=r.A*(1+0.55*e+0.6*kick),A=[],Bq=[];
+      for(const p of r.pts){const q=pos(r,p.u,p.j,t,amp),off=r.sep*q[2]*(1+0.4*e);A.push([q[0],q[1]-off,p]);Bq.push([q[0],q[1]+off,p])}
+      ctx.lineWidth=0.7;
+      ctx.strokeStyle='rgba(150,22,34,'+(0.3+0.28*e)+')';ctx.beginPath();A.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();
+      ctx.strokeStyle='rgba(118,16,28,'+(0.2+0.22*e)+')';ctx.beginPath();Bq.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();
+      ctx.strokeStyle='rgba(120,18,30,'+(0.12+0.2*e)+')';ctx.beginPath();for(let i=0;i<A.length;i+=2){ctx.moveTo(A[i][0],A[i][1]);ctx.lineTo(Bq[i][0],Bq[i][1])}ctx.stroke();
+      for(let i=0;i<A.length;i++){dot(A[i][0],A[i][1],A[i][2],1);if(i%2===0)dot(Bq[i][0],Bq[i][1],Bq[i][2],0.7)}
+      if(!RM&&Math.random()<(0.25+2*e+3*kick)*dt)spk.push({r,u:0,v:0.12+Math.random()*0.22,j:Math.random()*6})
+    }
+    const L=88,L2=L*L;
+    for(const m of mot){const a=Math.sin(m.x*0.0035+t*0.12)*2.2+Math.cos(m.y*0.0042-t*0.09)*2.2,v=(10+16*e)*sp;
+      m.vx+=(Math.cos(a)*v-m.vx)*0.04;m.vy+=(Math.sin(a)*v-m.vy)*0.04;
+      const dx=m.x-P.x,dy=m.y-P.y,d2=dx*dx+dy*dy;if(d2<16900){const f=(1-d2/16900)*6;m.vx+=dx/Math.sqrt(d2+1)*f*10;m.vy+=dy/Math.sqrt(d2+1)*f*10}
+      m.x+=m.vx*dt;m.y+=m.vy*dt;if(m.x<-20)m.x=W+20;if(m.x>W+20)m.x=-20;if(m.y<-20)m.y=H+20;if(m.y>H+20)m.y=-20}
+    ctx.lineWidth=0.6;
+    for(let i=0;i<mot.length;i++){const a=mot[i];for(let j=i+1;j<mot.length;j++){const b=mot[j],dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;if(d2<L2){ctx.strokeStyle='rgba(140,20,32,'+((1-d2/L2)*(0.32+0.3*e))+')';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}}
+    for(const m of mot)dot(m.x,m.y,m,0.85);
+    for(let i=spk.length-1;i>=0;i--){const s=spk[i];s.u+=s.v*dt*(1+e);if(s.u>1){spk.splice(i,1);continue}
+      const amp=s.r.A*(1+0.55*e+0.6*kick),q=pos(s.r,s.u,s.j,t,amp);
+      ctx.fillStyle='rgba(255,70,84,.16)';ctx.beginPath();ctx.arc(q[0],q[1],7,0,6.2832);ctx.fill();
+      ctx.fillStyle='rgba(255,170,175,.95)';ctx.beginPath();ctx.arc(q[0],q[1],1.8,0,6.2832);ctx.fill()}
+    requestAnimationFrame(frame);
+  }
+  function start(){resize();addEventListener('resize',resize);
+    addEventListener('pointermove',ev=>{P.x=ev.clientX;P.y=ev.clientY},{passive:true});
+    addEventListener('pointerdown',ev=>{P.x=ev.clientX;P.y=ev.clientY;api.kick()},{passive:true});
+    document.addEventListener('pointerleave',()=>{P.x=P.y=-1e4});
+    document.addEventListener('visibilitychange',()=>{run=!document.hidden;if(run){last=performance.now();requestAnimationFrame(frame)}});
+    requestAnimationFrame(frame)}
+  return api;
+})();
+
+/* ================= VOICE (out) ================= */
+const MALE=/(arthur|daniel|oliver|malcolm|fred|gordon|aaron|evan|nathan|\btom\b|reed|rishi|ryan|thomas|george|\blee\b|james|male|brian|eric|christopher|roger|guy)/i;
+const NOVELTY=/(compact|novelty|whisper|bells|bubbles|cellos|zarvox|trinoids|albert|bad news|good news|jester|organ|superstar|wobble|boing|deranged|hysterical|bahh|grandpa|grandma|rocko|shelley|sandy|flo\b|eddy)/i;
+function rankVoices(vs){return vs.filter(v=>/^en/i.test(v.lang)).map(v=>{const n=v.name;let s=0;if(/premium/i.test(n))s+=50;if(/enhanced|neural|natural|online/i.test(n))s+=35;if(/siri/i.test(n))s+=18;if(/en[-_]GB/i.test(v.lang))s+=22;if(MALE.test(n))s+=18;if(/google uk english male/i.test(n))s+=30;if(NOVELTY.test(n))s-=90;return {v,s}}).sort((a,b)=>b.s-a.s).map(x=>x.v)}
+function chunk(text){const parts=String(text).match(/[^.!?]+[.!?]+["'”’)]*\s*|[^.!?]+$/g)||[text];const out=[];let cur='';parts.forEach(p=>{if((cur+p).length>190&&cur){out.push(cur.trim());cur=p}else cur+=p});if(cur.trim())out.push(cur.trim());return out}
+const Voice={voices:[],tok:0,cache:new Map(),src:null,
+  hasWeb:()=>'speechSynthesis' in window,
+  engine(){return S.set.voice==='natural'&&AI()&&(S.set.models||{}).tts&&now()>Gem.ttsOff?'gemini':'web'},
+  loadVoices(){if(!this.hasWeb())return;try{const v=speechSynthesis.getVoices();if(v&&v.length)this.voices=rankVoices(v)}catch(e){}},
+  pick(){return this.voices.find(v=>v.voiceURI===S.set.dv)||this.voices[0]||null},
+  unlock(){Aud.unlock();if(!this.hasWeb())return;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},
+  prefetch(text){if(this.engine()!=='gemini'||!text)return;text=nm(text);if(this.cache.has(text))return;const p=Gem.speak(text).catch(e=>{this.cache.delete(text);throw e});p.catch(()=>{});this.cache.set(text,p);if(this.cache.size>8)this.cache.delete(this.cache.keys().next().value)},
+  async say(text,next){
+    text=nm(text);const tok=this.tok;NP.cap(text);
+    if(this.engine()==='gemini'){
+      try{let p=this.cache.get(text);if(!p){p=Gem.speak(text);this.cache.set(text,p)}if(next)this.prefetch(next);
+        const a=await p;this.cache.delete(text);if(tok!==this.tok)throw 'stop';await this.playAudio(a,tok);if(tok!==this.tok)throw 'stop';return}
+      catch(e){if(e==='stop'||tok!==this.tok)throw 'stop';Gem.ttsOff=now()+(e&&e.code==='rate_limited'?6*3600e3:600e3);toast('Voice',"Natural voice unavailable right now. Using the phone's voice.")}
+    }
+    return this.sayWeb(text,tok);
+  },
+  async playAudio(a,tok){
+    const ctx=Aud.get();try{await ctx.resume()}catch(e){}
+    let bytes=b64ToBytes(a.data);const isWav=bytes[0]===82&&bytes[1]===73&&bytes[2]===70&&bytes[3]===70;
+    if(!isWav){const rate=+((a.mime.match(/rate=(\d+)/)||[])[1]||24000);const pcm=new Int16Array(bytes.buffer,bytes.byteOffset,Math.floor(bytes.length/2));bytes=wavFromPCM16(pcm,rate)}
+    const buf=await new Promise((res,rej)=>ctx.decodeAudioData(bytes.buffer.slice(0),res,rej));
+    return new Promise(res=>{const s=ctx.createBufferSource();s.buffer=buf;const an=ctx.createAnalyser();an.fftSize=512;s.connect(an);an.connect(ctx.destination);this.src=s;Field.energy=0.8;
+      const arr=new Float32Array(an.fftSize);const iv=setInterval(()=>{an.getFloatTimeDomainData(arr);let q=0;for(let i=0;i<arr.length;i++)q+=arr[i]*arr[i];const r=Math.sqrt(q/arr.length);Field.level(r*4);if(r>0.12)Field.kick();if(tok!==this.tok){try{s.stop()}catch(e){}}},70);
+      s.onended=()=>{clearInterval(iv);Field.energy=0;this.src=null;res()};s.start(0)});
+  },
+  sayWeb(text,tok){
+    if(!this.hasWeb())return sleep(Math.min(12000,380*words(text))).then(()=>{if(tok!==this.tok)throw 'stop'});
+    const parts=chunk(text);
+    return new Promise((res,rej)=>{let i=0;const v=this.pick();
+      const next=()=>{if(tok!==this.tok){Field.energy=0;return rej('stop')}if(i>=parts.length){Field.energy=0;return res()}
+        const txt=parts[i++];const u=new SpeechSynthesisUtterance(txt);if(v){u.voice=v;u.lang=v.lang}else u.lang='en-GB';u.rate=S.set.rate;u.pitch=S.set.pitch;let done=false;
+        const fin=()=>{if(done)return;done=true;setTimeout(next,140)};
+        u.onstart=()=>{Field.energy=1;NP.cap(txt)};u.onboundary=()=>Field.kick();u.onend=fin;
+        u.onerror=ev=>{if(ev&&(ev.error==='interrupted'||ev.error==='canceled')){done=true;Field.energy=0;return rej('stop')}fin()};
+        try{speechSynthesis.speak(u)}catch(e){fin()}
+        setTimeout(()=>{if(!done&&!speechSynthesis.speaking&&!speechSynthesis.pending&&!Sess.paused)fin()},Math.max(4000,txt.length*140));
+      };next()});
+  },
+  stop(){this.tok++;try{if(this.hasWeb())speechSynthesis.cancel()}catch(e){}try{this.src&&this.src.stop()}catch(e){}Field.energy=0},
+  pause(){try{if(this.hasWeb())speechSynthesis.pause();const c=Aud.ctx;if(c&&this.src)c.suspend()}catch(e){}},
+  resume(){try{if(this.hasWeb())speechSynthesis.resume();const c=Aud.ctx;if(c)c.resume()}catch(e){}}
+};
+
+/* ================= AMBROSE'S MIND ================= */
+const PERSONA=()=>nm(`You are Ambrose, the voice and mind inside UMBRA, Joe's private tutor in dark psychology, persuasion, negotiation and sales. Character: a calm, softly spoken, unnervingly attentive man who has clearly been studying Joe closely and keeps notes on everything. Slightly creepy in how much he notices and remembers, but entirely on Joe's side: he wants Joe to read people brilliantly and become a formidable salesman. Never threatening, never flirtatious; the unease comes from his attentiveness and calm. British English. Blunt and accurate: flag shaky science where relevant (micro-expressions as lie detectors, the Stanford prison experiment, the 93% myth). Teach manipulation so Joe can recognise it and use the clean, legal version in sales; never coach illegal or deceptive practice such as inventing offers or misrepresenting a property, and say so briefly if asked.`);
+function ctxBlock(nf=40){
+  const facts=B.facts.slice(-nf).map(f=>'- '+f.text).join('\n')||'(nothing yet)';
+  const mods=MODULES.map(m=>`${m.id} "${m.title}": ${Math.round(mastery(m.id)*100)}%${S.heard[m.id]?'':' (not taught yet)'}`).join('\n');
+  const st=learnStats();
+  return nm(`ABOUT JOE\nRole: commercial property sales negotiator in the UK. Goal: understand people deeply and become an exceptional salesman.\nAmbrose's current profile of him: ${B.core.profile||'(none yet)'}\nKnown facts:\n${facts}\n\nLEARNING DATA\nAnswers so far: ${st.answers}; recent accuracy: ${st.recent==null?'n/a':Math.round(st.recent*100)+'%'}; minutes listened: ${st.mins}; streak: ${st.streak} days\nBy mode: ${JSON.stringify(st.modes)}\nBy time of day: ${JSON.stringify(st.tod)}\nBy question type: ${JSON.stringify(st.kind)}\nModule mastery:\n${mods}`);
+}
+const CMD='"command": "none, or skip / repeat / stop / pause if he is asking you to skip, repeat the question, end the session or pause; dont_know if he says he doesn\'t know"';
+async function gradeText(c,ans){
+  if(AI()){try{const r=await Gem.json(nm(`You're grading Joe's spoken answer while he drives. Speech-to-text may contain errors; judge the meaning.\nQuestion: ${c.q}\nIdeal answer: ${c.a}\nHis answer: "${ans}"\n\nReply with only JSON: {"score": number 0 to 1 (0.6 or more means essentially right), "say": "Ambrose's spoken feedback, at most two short sentences. If wrong or incomplete, give the key missing point.", "fact": "one short third-person sentence about Joe as a person, learner or seller if his answer reveals something, otherwise empty string"}`));
+    if(r&&typeof r.score==='number')return {score:clamp(r.score,0,1),say:String(r.say||''),fact:String(r.fact||'')}}catch(e){handleAIErr(e)}}
+  const sc=kwScore(c,ans);return {score:sc,say:sc>=0.6?pick(RIGHT):'Not quite. '+c.a,fact:''};
+}
+async function gradeAudio(c,wav){
+  return Gem.json(nm(`Joe has just answered a question out loud. The recording is attached (likely in his car, so expect road noise). Transcribe it, then grade it.\nQuestion: ${c.q}\nIdeal answer: ${c.a}\n\nReply with only JSON: {"heard": "what he said, verbatim; empty string if nothing intelligible", ${CMD}, "score": number 0 to 1 (0.6 or more means essentially right), "say": "Ambrose's spoken feedback, at most two short sentences; if wrong or incomplete, give the key missing point", "fact": "one short third-person sentence about Joe as a person, learner or seller if the answer reveals something, otherwise empty string"}`),{audio:wav});
+}
+async function absorbText(q,ans,src){
+  B.qa.push({id:uid(),t:now(),q,a:ans,src});touch('b');
+  if(!AI())return {say:pick(ACKS),followup:''};
+  try{const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHe answered (may be speech-to-text): "${ans}"\n\nReply with only JSON: {"say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific in what he said", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper into his answer, or empty string if this thread is done"}`));
+    addFacts(Array.isArray(r&&r.facts)?r.facts:[],src);return {say:String(r&&r.say||pick(ACKS)),followup:String(r&&r.followup||'')}}
+  catch(e){handleAIErr(e);return {say:pick(ACKS),followup:''}}
+}
+async function absorbAudio(q,wav){
+  const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHis spoken reply is attached (likely in his car, so expect road noise).\n\nReply with only JSON: {"heard": "what he said, verbatim; empty string if nothing intelligible", ${CMD}, "say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper, or empty string if this thread is done"}`),{audio:wav});
+  const heard=String(r&&r.heard||'').trim();
+  if(heard&&(!r.command||r.command==='none')){B.qa.push({id:uid(),t:now(),q,a:heard,src:'voice'});addFacts(Array.isArray(r.facts)?r.facts:[],'voice');touch('b')}
+  return {heard,command:String(r&&r.command||'none'),say:String(r&&r.say||''),followup:String(r&&r.followup||'')};
+}
+async function genBatch(personalOnly){
+  const r=await Gem.json(nm(`${ctxBlock(25)}\n\nPersonal questions already asked (don't repeat): ${S.asked.slice(-25).join(' | ')||'none'}\nRecent generated questions (don't repeat): ${D.ai.slice(-20).map(c=>c.q).join(' | ')||'none'}\nDifficulty now: ${difficulty()}.\nModule ids: ${MODULES.map(m=>m.id+'='+m.title).join(', ')}\n\nWrite the next 6 questions for Joe's audio session. They are read aloud while he drives and answered out loud, so each must work without looking at anything.\n${personalOnly?'All 6 are type "personal": questions that help you understand Joe more deeply: how he thinks, sells, reads people and learns, what drives him and what unsettles him at work. Build on what you already know; go deeper rather than wider.':'Mix: 2 "recall" (core ideas from his weakest taught modules), 2 "scenario" (a realistic commercial property sales or negotiation moment where he must apply a technique; the ideal answer is what he should say or do), 2 "personal" (to understand him more deeply as a person, learner and seller).'}\nNever ask about his health, his earnings or debts, or intimate relationships.\n\nReply with only JSON: {"items":[{"type":"recall|scenario|personal","module":"module id, empty for personal","q":"the question in one or two spoken sentences","a":"ideal answer in at most two spoken sentences, empty for personal","k":["3 or 4 short lowercase keywords a correct answer would contain, empty for personal"]}]}`));
+  return (r&&Array.isArray(r.items)?r.items:[]).filter(x=>x&&x.q);
+}
+
+/* ================= SESSION ENGINE ================= */
+const est=t=>Math.round(words(t)/2.4)+3;
+const lessonSeg=m=>({type:'lesson',mod:m.id,title:pad(m.n)+' · '+m.title,paras:m.script.concat(['On the deal. '+m.deal]),est:est(m.script.join(' '))+20});
+const qSeg=c=>({type:'q',card:c,est:32});
+const iqSeg=q=>({type:'iq',q,est:26});
+const hostSeg=t=>({type:'host',text:t,est:est(t)});
+function greet(){const h=tod(now());return {morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening',night:'Still up'}[h]+', '+(S.name||'Joe')}
+function introLine(o){
+  let s=pick(INTROS[tod(now())]);if(o.kind==='interview')return s;
+  const ear=earMode();
+  if(!S.agg.sessions)s+=" This is our first session. I'll teach you something, test you, then ask about you."+(ear==='none'?" I can't hear you yet, so answer out loud anyway. Saying it is how it sticks.":" When I ask you something, just answer out loud. I'll be listening. Say skip, repeat, or stop whenever you like.");
+  else{const d=dueCards().length;if(d)s+=` ${d} ${d===1?'thing is':'things are'} due for review.`}
+  if(o.primer)s+=' First, your viewing.';return s;
+}
+function buildPlan(o){
+  const segs=[];let sec=0;const add=s=>{segs.push(s);sec+=s.est||20};const used=new Set();
+  const rev=c=>{if(c&&!used.has(c.id)){used.add(c.id);add(qSeg(c))}};
+  const budget=(o.len==='inf'?14:+o.len||20)*60;
+  add(hostSeg(introLine(o)));
+  if(o.kind==='interview'){add(hostSeg("No lessons this time. Just you. I'll ask, you answer honestly, and I'll keep going until you tell me to stop."));interviewQs(4).forEach(q=>add(iqSeg(q)));return segs}
+  if(o.focus){const m=MOD[o.focus];add(lessonSeg(m));masteryCards(m.id).forEach(rev);add(iqSeg(interviewQs(1)[0]));return segs}
+  if(o.primer)add({type:'lesson',mod:null,title:'Viewing primer',paras:[PRIMER],est:est(PRIMER)});
+  const due=dueCards();const heard=MODULES.filter(m=>S.heard[m.id]);
+  const avgH=heard.length?heard.reduce((a,m)=>a+mastery(m.id),0)/heard.length:1;
+  const consolidate=due.length>=5&&avgH<0.45;const iqs=interviewQs(4);let k=0;
+  due.slice(0,2).forEach(rev);
+  if(consolidate)add(hostSeg("No new lesson today. You're forgetting faster than you're learning, so we're going to lock in what you've already heard."));
+  else{const m=nextModule();add(lessonSeg(m));CORE.filter(c=>c.mod===m.id).forEach(rev)}
+  if(iqs[k])add(iqSeg(iqs[k++]));
+  due.slice(2,consolidate?10:6).forEach(rev);
+  if(!consolidate&&budget>=1200&&sec<budget*0.55){const m2=MODULES.find(m=>!S.heard[m.id]&&!segs.some(s=>s.mod===m.id));if(m2){add(lessonSeg(m2));CORE.filter(c=>c.mod===m2.id).forEach(rev)}}
+  for(const c of weakestCards(12)){if(sec>=budget)break;rev(c);if(segs.length%4===0&&iqs[k]&&sec<budget)add(iqSeg(iqs[k++]))}
+  if(iqs[k]&&sec<budget)add(iqSeg(iqs[k++]));
+  return segs;
+}
+let wakeLock=null;
+function wake(on){try{if(on&&navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{wakeLock=l}).catch(()=>{});else if(!on&&wakeLock){wakeLock.release().catch(()=>{});wakeLock=null}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Sess.on)wake(true)});
+const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:null,genN:0,awaitTap:null,gradeVal:undefined,started:0,ev0:0,listening:false,
+  start(o){
+    if(this.on)return;Voice.unlock();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+    this.o=o;this.on=true;this.i=0;this.tok++;this.paused=false;this.replay=false;this.genN=0;this.started=now();this.ev0=answers().length;
+    this.q=buildPlan(o);NP.open(o.mode);wake(true);const d=$('[data-go=transit]',$('#dock'));if(d){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce')}
+    this.run();
+  },
+  async run(){
+    while(this.on){
+      if(this.o.len==='inf'&&this.q.length-this.i<=2&&!this.filling)this.filling=this.refill().finally(()=>{this.filling=null});
+      if(this.i>=this.q.length){if(this.filling)await this.filling;if(this.i>=this.q.length)break}
+      NP.progress(this.i,this.q.length,this.o.len==='inf');
+      try{await this.play(this.q[this.i]);this.i++}
+      catch(err){if(!this.on)break;if(this.replay){this.replay=false;continue}this.i++}
+    }
+    if(this.on){const n=answers().length-this.ev0;const right=answers().slice(this.ev0).filter(e=>e.s>=0.6).length;try{await Voice.say((n?`${right} out of ${n} today. `:'')+pick(OUTROS))}catch(e){}}
+    this.finish();
+  },
+  nextText(){const s=this.q[this.i+1];if(!s)return '';return s.type==='host'?s.text:s.type==='lesson'?s.paras[0]:s.type==='iq'?s.q:''},
+  // Listen for one answer. Returns {wav} (rec) or {text} (web) or null.
+  async hear(tok,maxWait){
+    const mode=earMode();if(mode==='none')return null;
+    const chk=()=>tok===this.tok&&this.on;
+    if(mode==='rec'){
+      NP.prompt('Listening…',true);this.listening=true;
+      const wav=await Rec.capture({maxWait,onState:s=>{if(s==='speaking')NP.prompt('Hearing you… (tap when done)',true)}});
+      this.listening=false;NP.prompt('');if(!chk())return null;return wav?{wav}:null;
+    }
+    if(WebRec.needTap){const ok=await this.waitTap(tok,maxWait);if(!ok)return null}
+    NP.prompt('Listening…',true);this.listening=true;
+    const text=await WebRec.listen({maxWait,onHeard:t=>NP.heard(t),fromTapOnce:WebRec.needTap});
+    this.listening=false;NP.prompt('');if(!chk())return null;
+    return text?{text}:null;
+  },
+  waitTap(tok,ms){return new Promise(res=>{NP.prompt('Tap anywhere to answer',true);let left=ms;const a={done:false,res:v=>{if(a.done)return;a.done=true;clearInterval(iv);this.awaitTap=null;NP.prompt('');res(v)}};this.awaitTap=a;
+    const iv=setInterval(()=>{if(tok!==this.tok||!this.on)return a.res(false);if(!this.paused){left-=100;if(left<=0)a.res(false)}},100)})},
+  async play(seg){
+    const tok=this.tok;const chk=()=>{if(tok!==this.tok||!this.on)throw 'stop'};
+    const say=async(t,nx)=>{chk();await Voice.say(t,nx);chk()};
+    const wait=async ms=>{let left=ms;while(left>0){await sleep(100);chk();if(!this.paused)left-=100}};
+    const mode=this.o.mode;
+    if(seg.type==='host'){NP.set('Ambrose','');await say(seg.text,this.nextText());return}
+    if(seg.type==='lesson'){NP.set('Lesson',seg.title);for(let i=0;i<seg.paras.length;i++){await say(seg.paras[i],seg.paras[i+1]||this.nextText());await wait(250)}
+      if(seg.mod){S.heard[seg.mod]=(S.heard[seg.mod]||0)+1;logEv({type:'lesson',mod:seg.mod,mode});touch('s')}return}
+    if(seg.type==='q'){
+      const c=seg.card;NP.set(c.kind==='scenario'?'Scenario':'Recall',(MOD[c.mod]||{}).title||'');
+      for(let attempt=0;attempt<3;attempt++){
+        await say((attempt?'Again. ':pick(['Question.','Tell me.',"Here's one.",'Go on then.'])+' ')+c.q);
+        if(earMode()==='none'){await say(pick(['Answer out loud.','Say it out loud.','Out loud. Go.']));NP.prompt('Think…',true);await wait(S.set.think*1000);NP.prompt('');break}
+        const h=await this.hear(tok,S.set.think*1000+8000);chk();
+        if(!h)break;
+        let g,cmd='none';
+        NP.prompt('Ambrose is weighing that…',true);
+        if(h.wav){try{const r=await gradeAudio(c,h.wav);chk();NP.heard(r.heard||'');cmd=String(r.command||'none');g={score:clamp(+r.score||0,0,1),say:String(r.say||''),fact:String(r.fact||''),heard:String(r.heard||'')};if(!g.heard&&cmd==='none'){NP.prompt('');await say(pick(["I didn't catch that.","Road noise. I lost you."]));break}}
+          catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I couldn't make that out.");break}}
+        else{cmd=command(h.text);if(cmd==='none'){g=await gradeText(c,h.text);chk()}}
+        NP.prompt('');
+        if(cmd==='repeat')continue;
+        if(cmd==='skip'){await say('Skipping.');return}
+        if(cmd==='stop'){await say('Stopping there.');this.on=false;this.tok++;throw 'stop'}
+        if(cmd==='pause'){this.togglePause();await say('Paused. Tap to carry on.');while(this.paused){await sleep(200);chk()}continue}
+        if(cmd==='dont_know'){gradeCard(c,0,mode);await say(pick(["That's fine. Here it is.","Then listen."])+' '+c.a);return}
+        gradeCard(c,g.score,mode);if(g.fact)addFacts([g.fact],'answer');await say(g.say||(g.score>=0.6?pick(RIGHT):'Not quite. '+c.a));return;
+      }
+      await say(pick(["Here's what I wanted.",'The answer.',"What I'd want to hear:"])+' '+c.a);
+      if(mode==='drive'){queuePending(c,mode);return}
+      const s=await this.selfGrade(7000,chk);
+      if(s===null)queuePending(c,mode);else{gradeCard(c,s,mode);await say(s?pick(['Good.','Noted.','I thought so.']):pick(["We'll come back to it.","I'll ask again soon."]))}
+      return;
+    }
+    if(seg.type==='iq'){
+      NP.set('About you','');
+      for(let attempt=0;attempt<3;attempt++){
+        await say((attempt?'Again. ':'')+seg.q);if(!attempt)rememberAsked(seg.q);
+        if(earMode()==='none')break;
+        const h=await this.hear(tok,22000);chk();if(!h)break;
+        NP.prompt('Ambrose is filing that…',true);let r;
+        if(h.wav){try{r=await absorbAudio(seg.q,h.wav);chk();NP.heard(r.heard)}catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I couldn't make that out. I'll ask again later.");break}
+          if(!r.heard&&r.command==='none'){NP.prompt('');await say("I didn't catch that.");break}}
+        else{const cmd=command(h.text);if(cmd!=='none'&&cmd!=='dont_know')r={command:cmd};else{const x=await absorbText(seg.q,h.text,'voice');chk();r={command:'none',say:x.say,followup:x.followup}}}
+        NP.prompt('');
+        if(r.command==='repeat')continue;if(r.command==='skip'){await say('Fine. Another time.');return}
+        if(r.command==='stop'){await say('Stopping there.');this.on=false;this.tok++;throw 'stop'}
+        if(r.command==='pause'){this.togglePause();await say('Paused. Tap to carry on.');while(this.paused){await sleep(200);chk()}continue}
+        S.unans=S.unans.filter(u=>u.q!==seg.q);touch('s');
+        await say(r.say||pick(ACKS));if(r.followup)this.q.splice(this.i+1,0,iqSeg(r.followup));return;
+      }
+      if(!S.unans.some(u=>u.q===seg.q))S.unans.push({id:uid(),q:seg.q,t:now()});if(S.unans.length>40)S.unans.shift();touch('s');
+      await say(pick(["Think about it. Tell me when you've parked.","Hold that one. I'll be waiting.","We'll come back to that."]));
+    }
+  },
+  async selfGrade(ms,chk){NP.grade(true);this.gradeVal=undefined;let left=ms;try{while(left>0&&this.gradeVal===undefined){await sleep(100);chk();if(!this.paused)left-=100}return this.gradeVal===undefined?null:this.gradeVal}finally{NP.grade(false)}},
+  async refill(){
+    const queued=new Set(this.q.slice(this.i).filter(s=>s.card).map(s=>s.card.id));const add=[];
+    if(this.o.kind!=='interview')dueCards().filter(c=>!queued.has(c.id)).slice(0,2).forEach(c=>{queued.add(c.id);add.push(qSeg(c))});
+    if(AI()&&this.genN<80){try{const items=await genBatch(this.o.kind==='interview');this.genN++;
+        items.forEach(it=>{if(it.type==='personal'||this.o.kind==='interview')add.push(iqSeg(String(it.q)));else{const c=addAiCard(it);if(c)add.push(qSeg(c))}})}
+      catch(e){handleAIErr(e)}}
+    if(add.length<3){if(this.o.kind!=='interview')weakestCards(8).filter(c=>!queued.has(c.id)).slice(0,3).forEach(c=>add.push(qSeg(c)));const iq=interviewQs(1)[0];if(iq)add.push(iqSeg(iq))}
+    this.q.push(...add);
+  },
+  tap(){ // returns true if the tap was used for listening
+    if(this.awaitTap){this.awaitTap.res(true);return true}
+    if(this.listening){Rec.stop();WebRec.stop();return true}
+    return false;
+  },
+  skip(){this.tok++;Voice.stop();Rec.stop();WebRec.stop()},
+  again(){this.replay=true;this.tok++;Voice.stop();Rec.stop();WebRec.stop()},
+  end(){this.on=false;this.tok++;Voice.stop();Rec.stop();WebRec.stop()},
+  togglePause(){this.paused=!this.paused;if(this.paused)Voice.pause();else Voice.resume();NP.paused(this.paused)},
+  finish(){
+    const mins=(now()-this.started)/60000;S.agg.mins+=mins;const d=ymd(now());S.agg.days[d]=(S.agg.days[d]||0)+mins;S.agg.sessions++;touch('s');
+    this.on=false;this.awaitTap=null;NP.close();wake(false);render();
+    if(S.pending.length)toast('Ambrose',`${S.pending.length} answer${S.pending.length>1?'s are':' is'} waiting for your verdict in Debrief.`);
+  }
+};
+
+/* ================= NOW PLAYING UI ================= */
+const NP={iv:null,t0:0,
+  open(mode){const el=$('#np');el.hidden=false;document.body.classList.add('np-open');el.classList.toggle('drive',mode==='drive');this.cap('');this.heard('');this.prompt('');this.paused(false);this.grade(false);this.t0=now();
+    clearInterval(this.iv);this.iv=setInterval(()=>{const s=Math.floor((now()-this.t0)/1000);$('#np-time').textContent=pad(Math.floor(s/60))+':'+pad(s%60)},1000)},
+  close(){$('#np').hidden=true;document.body.classList.remove('np-open');clearInterval(this.iv)},
+  set(k,t){$('#np-kind').textContent=k;$('#np-title').textContent=t||'';this.heard('')},
+  cap(t){const e=$('#np-cap');if(e)e.textContent=t},
+  heard(t){const e=$('#np-heard');if(e)e.textContent=t?'“'+t+'”':''},
+  prompt(t,live){const p=$('#np-prompt');if(!p)return;p.textContent=t||'';p.classList.toggle('live',!!live)},
+  promptText(){const p=$('#np-prompt');return p?p.textContent:''},
+  progress(i,n,inf){$('#np-bar').style.width=inf?'100%':Math.round(100*i/Math.max(1,n))+'%'},
+  paused(b){$('#np-pp').innerHTML=b?'<path d="M7 5l12 7-12 7z"/>':'<path d="M8 5v14M16 5v14"/>';if(b)this.prompt('Paused. Tap to resume');else if(this.promptText().indexOf('Paused')===0)this.prompt('')},
+  grade(b){$('#np-grade').hidden=!b}
+};
+
+/* ================= EXPORT ================= */
+function brainMarkdown(){
+  const d=x=>new Date(x).toISOString().slice(0,10);
+  let md=`# ${S.name||'Joe'}: Umbra brain\n_Exported ${d(now())}_\n\n## Ambrose's read\n${B.core.profile||'(not written yet)'}\n\n## How you learn\n${B.core.learning||'(not enough data yet)'}\n\n## Focus\n${B.core.focus||'-'}\n\n## Facts (${B.facts.length})\n`;
+  B.facts.slice().reverse().forEach(f=>{md+=`- ${f.text} _(${d(f.t)}, ${f.src})_\n`});
+  md+=`\n## Field log\n`;B.field.slice().reverse().forEach(f=>{md+=`### ${d(f.t)}\n${f.text}\n${f.an?'\n> '+f.an.replace(/\n/g,'\n> ')+'\n':''}\n`});
+  md+=`\n## Interview answers\n`;B.qa.slice().reverse().forEach(x=>{md+=`**Q:** ${x.q}\n**A:** ${x.a}\n\n`});
+  md+=`## Mastery\n| Level | Module | Mastery |\n|---|---|---|\n`;MODULES.forEach(m=>{md+=`| ${pad(m.n)} | ${m.title} | ${Math.round(mastery(m.id)*100)}% |\n`});
+  return md;
+}
+function download(name,text,type){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);return true}catch(e){return false}}
+
+/* ================= RENDER HELPERS ================= */
+function ring(v){const r=16,c=2*Math.PI*r;return `<svg class="ring" viewBox="0 0 40 40" aria-label="${Math.round(v*100)} percent"><circle class="bg" cx="20" cy="20" r="${r}" fill="none" stroke-width="3"/><circle class="fg" cx="20" cy="20" r="${r}" fill="none" stroke-width="3" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-v)).toFixed(1)}" transform="rotate(-90 20 20)"/><text x="20" y="23.5" text-anchor="middle">${Math.round(v*100)}</text></svg>`}
+const MIC='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+function dateStr(){return new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
+function voiceName(){if(Voice.engine()==='gemini')return 'Natural · '+S.set.gv;const v=Voice.pick();return v?v.name:'phone voice'}
+const canDictate=()=>WebRec.ok()||(AI()&&Rec.ok());
+
+/* ---------- TRANSIT ---------- */
+function vTransit(){
+  const m=nextModule(),due=dueCards().length,ear=earMode();
+  const heard=MODULES.filter(x=>S.heard[x.id]);const avgH=heard.length?heard.reduce((a,x)=>a+mastery(x.id),0)/heard.length:1;const cons=due>=5&&avgH<0.45;
+  const lenLbl=S.set.len==='inf'?'ENDLESS':S.set.len+' MIN';
+  return `
+<div><p class="eyebrow">Transit · ${esc(dateStr())}</p><h1 class="dot-h" style="margin-top:6px">${esc(greet())}</h1></div>
+<button class="orb" data-act="begin" aria-label="Begin session"><span><span class="o-l">BEGIN</span><span class="o-s">${lenLbl} · ${esc(S.set.mode.toUpperCase())}</span></span></button>
+<div class="seg" role="group" aria-label="Where are you">${[['drive','Driving'],['walk','Walking'],['desk','At a desk']].map(([k,l])=>`<button data-set-mode="${k}" class="${S.set.mode===k?'on':''}" aria-pressed="${S.set.mode===k}">${l}</button>`).join('')}</div>
+<div class="seg" role="group" aria-label="Session length">${[['10','10 min'],['20','20 min'],['inf','Endless']].map(([k,l])=>`<button data-set-len="${k}" class="${S.set.len===k?'on':''}" aria-pressed="${S.set.len===k}">${l}</button>`).join('')}</div>
+${S.set.key?'':keyCard()}
+<div class="card"><div class="toggle"><div><h3>Viewing coming up</h3><p class="small muted">Opens with a 60-second primer on what to watch for.</p></div><button class="sw" role="switch" aria-checked="${!!S.set.primer}" data-act="primer" aria-label="Viewing primer"></button></div></div>
+<div class="card"><p class="eyebrow">Ambrose has planned</p><div style="margin-top:6px">
+<div class="kv"><span class="muted">${cons?'Today':'New lesson'}</span><b>${cons?'Consolidation, no new lesson':esc(pad(m.n)+' '+m.title)}</b></div>
+<div class="kv"><span class="muted">Due for review</span><b class="num">${due}</b></div>
+<div class="kv"><span class="muted">Questions about you</span><b>${AI()?'Unlimited':'From his notebook'}</b></div>
+<div class="kv"><span class="muted">Ears</span><b>${earLabel(ear)}</b></div>
+<div class="kv"><span class="muted">Voice</span><b>${esc(voiceName())}</b></div></div></div>
+${earNote(ear)}
+${debriefCard()}
+<div class="card"><h3>Deep scan</h3><p class="small muted" style="margin:4px 0 10px">No lessons. Ambrose interviews you with no limit and files everything in your brain. Answer out loud; say "stop" when you've had enough.</p><button class="btn full" data-act="deepscan">Start the interview</button></div>
+<p class="small muted">Before you drive: keep the screen on (Settings › Display › Auto-Lock › Never while driving), set it going while parked, and keep your eyes on the road. Ambrose never needs you to look.</p>`;
+}
+function keyCard(){
+  return `<div class="card hot"><p class="eyebrow">Give Ambrose a mind · free, 2 minutes</p>
+<ol class="small" style="margin:8px 0 10px;padding-left:18px;color:#e6dcdb"><li>On your phone, open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> and sign in with Google.</li><li>Tap <b>Create API key</b>, then copy it.</li><li>Paste it here.</li></ol>
+<label class="lab" for="key-in">Gemini API key</label><input type="text" id="key-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
+<button class="btn red full" style="margin-top:8px" data-act="key-save">Connect</button>
+<p class="small muted" style="margin-top:10px">It unlocks hands-free listening with no taps, proper marking of your answers, unlimited questions about you, and a natural voice. The free allowance has a daily cap; when it runs out he uses his notebook until it resets. On Google's free tier, what you send may be used to improve Google's products, so don't tell him anything you'd mind Google seeing. The key stays on this phone.</p></div>`;
+}
+function earNote(ear){
+  if(ear==='rec')return '';
+  if(ear==='web')return `<div class="card"><h3>Listening through Safari</h3><p class="small muted" style="margin-top:6px">Ambrose hears you through the phone's own dictation. It needs Siri & Dictation switched on, and it only works in a Safari tab, not from a home-screen icon. ${S.set.key?'':'Add the free key above for fully hands-free listening that works everywhere.'}</p></div>`;
+  return `<div class="card"><h3>Ambrose can't hear you yet</h3><p class="small muted" style="margin-top:6px">${S.set.key&&Rec.denied?'The microphone is blocked. Settings › Apps › Safari › Microphone › Allow, then reload this page.':'Open this page in Safari (not from a home-screen icon), or add the free key above. Until then, answer out loud and mark yourself in Debrief.'}</p></div>`;
+}
+function debriefCard(){
+  if(!S.pending.length)return '';
+  const items=S.pending.slice(-8).reverse().map(p=>{const c=cardById(p.id);if(!c)return '';return `<div class="card" style="padding:11px 12px"><p style="font-size:14px;font-weight:600">${esc(c.q)}</p><p class="small muted" style="margin-top:4px">${esc(c.a)}</p><div class="row" style="margin-top:9px"><button class="btn sm grow" data-act="db-grade" data-id="${esc(c.id)}" data-s="0">Missed it</button><button class="btn sm red grow" data-act="db-grade" data-id="${esc(c.id)}" data-s="1">Had it</button></div></div>`}).join('');
+  return `<div class="card hot"><p class="eyebrow">Debrief · ${S.pending.length} waiting</p><p class="small muted" style="margin:4px 0 10px">Ambrose couldn't hear these. Be honest: did you have it?</p><div class="list">${items}</div></div>`;
+}
+
+/* ---------- PATH ---------- */
+function vPath(){
+  const nx=nextModule(),allHeard=MODULES.every(m=>S.heard[m.id]);
+  let h=`<div><p class="eyebrow">Path · ${MODULES.length} levels, in order</p><h1 class="dot-h" style="margin-top:6px">The descent</h1><p class="muted small" style="margin-top:8px">Each level has an audio lesson, videos in watching order, a sales angle and recall questions. Ambrose picks your next level; you can jump anywhere.</p></div><div>`;
+  let cur='';
+  MODULES.forEach(m=>{if(m.track!==cur){cur=m.track;h+=`<p class="track">${esc(TRACKS[cur])}</p>`}
+    h+=`<button class="mod ${(!allHeard&&m.id===nx.id)?'next':''}" data-mod="${m.id}"><span class="n">${pad(m.n)}</span><span><span class="t">${esc(m.title)}${(!allHeard&&m.id===nx.id)?' <span class="pill red" style="margin-left:4px">Next</span>':''}</span><span class="s">${esc(m.sum)}</span></span>${ring(mastery(m.id))}</button>`});
+  return h+'</div>';
+}
+let sheetMod=null,huntRes={};
+function vModule(m){
+  const cards=masteryCards(m.id);
+  return `<div><p class="eyebrow">Level ${pad(m.n)} · ${esc(TRACKS[m.track])}</p><h2 class="dot-h" style="font-size:30px;margin-top:6px">${esc(m.title)}</h2><p class="muted" style="margin-top:6px">${esc(m.sum)}</p></div>
+<div class="row wrap"><button class="btn red" data-act="play-mod" data-id="${m.id}">Play lesson + drill</button><span class="pill ${S.heard[m.id]?'ok':''}">${S.heard[m.id]?'Heard':'Not heard yet'}</span><span class="pill">${Math.round(mastery(m.id)*100)}% mastery</span></div>
+<div class="card hot"><p class="eyebrow">On the deal</p><p style="margin-top:6px">${esc(m.deal)}</p></div>
+<section><p class="eyebrow">Lesson</p><div class="script" style="margin-top:8px">${m.script.map(p=>`<p>${esc(nm(p))}</p>`).join('')}</div></section>
+<section><p class="eyebrow">Key ideas</p><dl class="concept" style="margin-top:8px">${m.concepts.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl></section>
+<section><p class="eyebrow">Watch, in this order</p><div style="margin-top:8px">${m.vids.map((v,i)=>`<a class="vid ${S.watched[v[0]]?'seen':''}" href="https://www.youtube.com/watch?v=${v[0]}" target="_blank" rel="noopener" data-vid="${v[0]}"><span class="vn">${i+1}</span><span><span class="vt">${esc(v[1])}</span><span class="vw">${esc(v[2])} · ${esc(v[3])}</span></span><span class="small muted">${S.watched[v[0]]?'Watched':'Open'}</span></a>`).join('')}</div></section>
+<section><p class="eyebrow">Go deeper on YouTube</p><div class="chips" style="margin-top:8px">${m.find.concat(huntRes[m.id]||[]).map(q=>`<a class="chip" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q)}" target="_blank" rel="noopener">${esc(q)}</a>`).join('')}</div>${AI()?`<button class="btn sm ghost" style="margin-top:8px" data-act="hunt" data-id="${m.id}">Ask Ambrose what to search for next</button>`:''}</section>
+<div class="card"><p class="eyebrow">Field drill</p><p style="margin-top:6px">${esc(m.drill)}</p></div>
+<section><p class="eyebrow">Recall cards · ${cards.length}</p><div class="list" style="margin-top:8px">${cards.map(c=>`<div class="card" style="padding:11px 12px"><p style="font-size:14px;font-weight:600">${esc(c.q)}</p><details style="margin-top:6px"><summary class="small muted">Answer</summary><p class="small" style="margin-top:4px">${esc(c.a)}</p></details><div class="bar" style="margin-top:9px"><i style="width:${Math.round(strength(c.id)*100)}%"></i></div></div>`).join('')}</div></section>`;
+}
+function openModule(id,keep){const m=MOD[id];if(!m)return;sheetMod=id;sheetKind='mod';openSheet('level '+pad(m.n)+' — '+m.title.toLowerCase(),vModule(m),keep)}
+
+/* ---------- AMBROSE ---------- */
+let subA='interview';
+function vAmbrose(){
+  const tabs=[['interview','Interview'],['talk','Talk'],['notebook','Notebook'],['field','Field'],['brain','Brain']];
+  const body={interview:aInterview,talk:aTalk,notebook:aNotebook,field:aField,brain:aBrain}[subA]();
+  return `<div class="presence"><div class="eye" aria-hidden="true"></div><div><p class="eyebrow">Ambrose</p><h2 class="dot-h" style="margin-top:4px">He's been taking notes.</h2><p class="small muted" style="margin-top:4px">${B.facts.length} things known · ${B.qa.length} answers · ${B.field.length} field logs${AI()?'':' · mind offline'}</p></div></div>
+<div class="chips" role="tablist">${tabs.map(([k,l])=>`<button class="chip ${subA===k?'on':''}" data-sub="${k}" role="tab" aria-selected="${subA===k}">${l}</button>`).join('')}</div>${body}`;
+}
+function curIQ(){if(!S.curIQ){S.curIQ=S.iqQ.shift()||interviewQs(1)[0]||SEED_IQ[0];touch('s')}return S.curIQ}
+const micBtn=id=>canDictate()?`<button class="btn" data-act="mic" data-target="${id}">${MIC} Speak</button>`:'';
+function aInterview(){
+  const q=curIQ();
+  return `<div class="card hot"><p class="eyebrow">Ambrose asks</p><p class="q-big" style="margin-top:8px">${esc(q)}</p>
+<label class="lab" for="iq-ans" style="margin-top:12px">Type it, or tap Speak</label><textarea id="iq-ans" placeholder="Say it how you'd say it out loud."></textarea>
+<div class="row" style="margin-top:8px">${micBtn('iq-ans')}<button class="btn red grow" data-act="iq-send">Give it to Ambrose</button><button class="btn ghost" data-act="iq-skip">Skip</button></div>
+${S.lastReact?`<p style="margin-top:12px;font-style:italic;color:#e9c9cc">${esc(S.lastReact)}</p>`:''}</div>
+${S.unans.length?`<section><p class="eyebrow">He asked these on the road</p><div class="list" style="margin-top:8px">${S.unans.slice(-6).reverse().map(u=>`<button class="card" style="text-align:left;color:inherit" data-act="use-unans" data-id="${u.id}"><span style="font-size:14px">${esc(u.q)}</span></button>`).join('')}</div></section>`:''}
+<p class="small muted">There's no last question. ${AI()?'Each answer shapes the next one.':'Add the free key on Transit and the questions become endless and personal.'}</p>`;
+}
+function aTalk(){
+  const msgs=S.chat.slice(-24).map(m=>`<div class="msg ${m.r==='u'?'me':'amb'}">${esc(m.c)}</div>`).join('');
+  return `<div class="chat" id="chat">${msgs||`<div class="msg amb">Ask me anything. How to read the buyer you met yesterday. What a tactic is called. Why you froze on a price. I'll answer with what I know about you.</div>`}</div>
+${AI()?`<textarea id="chat-in" placeholder="Talk to Ambrose…" style="min-height:64px"></textarea><div class="row">${micBtn('chat-in')}<button class="btn red grow" data-act="chat-send">Send</button></div>`:`<p class="small muted">Ambrose's mind needs the free key (Transit tab).</p>`}`;
+}
+function aNotebook(){
+  const c=B.core;
+  return `<div class="card"><p class="eyebrow">What he believes about you</p><p style="margin-top:8px;white-space:pre-wrap">${esc(c.profile||'Nothing yet. Answer some questions, log a viewing, then ask him to rethink you.')}</p>${c.learning?`<p class="eyebrow" style="margin-top:14px">How you learn</p><p style="margin-top:6px">${esc(c.learning)}</p>`:''}${c.focus?`<p class="eyebrow" style="margin-top:14px">What to work on</p><p style="margin-top:6px">${esc(c.focus)}</p>`:''}</div>
+${AI()?`<button class="btn red full" data-act="rethink">Ask Ambrose to rethink you</button>`:''}
+${c.hyp.length?`<section><p class="eyebrow">His suspicions. Confirm or correct</p><div class="card" style="margin-top:8px">${c.hyp.map(h=>`<div class="hyp"><p>${esc(h.text)}</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="hyp" data-id="${h.id}" data-v="0">Wrong</button><button class="btn sm red" data-act="hyp" data-id="${h.id}" data-v="1">That's true</button></div></div>`).join('')}</div></section>`:''}`;
+}
+function aField(){
+  return `<div class="card"><h3>Log something from the field</h3><p class="small muted" style="margin:4px 0 10px">A viewing, a call, a negotiation. Who, what you noticed, what you said, what happened.</p><textarea id="field-in" placeholder="Tenant went quiet when I mentioned the service charge, crossed his arms, looked at his colleague…"></textarea>
+<div class="row" style="margin-top:8px">${micBtn('field-in')}<button class="btn red grow" data-act="field-log">${AI()?'Log it and decode':'Log it'}</button></div></div>
+<div class="list">${B.field.slice().reverse().slice(0,20).map(f=>`<div class="card"><p class="small muted mono">${new Date(f.t).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p><p style="margin-top:6px;white-space:pre-wrap">${esc(f.text)}</p>${f.an?`<p style="margin-top:10px;white-space:pre-wrap;color:#e9c9cc">${esc(f.an)}</p>`:(AI()?`<button class="btn sm ghost" style="margin-top:8px" data-act="field-decode" data-id="${f.id}">Decode</button>`:'')}</div>`).join('')}</div>`;
+}
+function aBrain(){
+  const facts=B.facts.slice().reverse();const stale=now()-(S.lastBackup||0)>7*DAY&&(B.facts.length+B.qa.length)>5;
+  return `<div class="tiles"><div class="tile"><div class="v">${B.facts.length}</div><div class="l">facts filed</div></div><div class="tile"><div class="v">${B.qa.length}</div><div class="l">answers kept</div></div></div>
+<div class="card ${stale?'hot':''}"><h3>Your ever-growing brain</h3><p class="small muted" style="margin:4px 0 10px">It lives on this phone, in this browser. ${stale?'<b style="color:#f0a2a8">No backup this week.</b> ':''}Safari can clear website data you haven't opened for a while, so save a backup weekly. The Markdown file drops straight into Obsidian.</p>
+<div class="row wrap"><button class="btn red" data-act="bk-save">Save backup</button><button class="btn" data-act="md-save">Export to Obsidian (.md)</button><button class="btn ghost" data-act="bk-copy">Copy backup</button></div>
+<details style="margin-top:12px"><summary class="small muted">Restore from a backup</summary><textarea id="bk-in" class="copybox" style="margin-top:8px" placeholder='Paste the backup text ({"app":"umbra"…})'></textarea><button class="btn full" style="margin-top:8px" data-act="bk-restore">Restore</button></details></div>
+<section><p class="eyebrow">What he knows · newest first</p><div class="card" style="margin-top:8px">${facts.length?facts.slice(0,80).map(f=>`<div class="fact"><span>${esc(f.text)}<br><span class="small muted mono">${esc(f.src)} · ${new Date(f.t).toLocaleDateString('en-GB')}</span></span><button class="x" data-act="fact-del" data-id="${f.id}" aria-label="Forget this">×</button></div>`).join(''):'<p class="small muted">Nothing yet. Every answer you give adds to this.</p>'}</div></section>
+${B.qa.length?`<section><p class="eyebrow">Your answers</p><div class="card" style="margin-top:8px">${B.qa.slice().reverse().slice(0,30).map(x=>`<div class="fact"><span><b style="font-weight:600">${esc(x.q)}</b><br>${esc(x.a)}</span></div>`).join('')}</div></section>`:''}`;
+}
+
+/* ---------- PULSE ---------- */
+function vPulse(){
+  const idx=Math.round(100*MODULES.reduce((a,m)=>a+mastery(m.id),0)/MODULES.length);const known=allCards().filter(c=>strength(c.id)>0.6).length;
+  return `<div><p class="eyebrow">Pulse · how you're learning</p><div class="row" style="align-items:flex-end;margin-top:8px"><div class="big-num">${idx}</div><p class="small muted" style="padding-bottom:8px">Synaptic index<br>average mastery across all ${MODULES.length} levels</p></div></div>
+<div class="tiles"><div class="tile"><div class="v">${streak()}</div><div class="l">day streak</div></div><div class="tile"><div class="v">${Math.round(S.agg.mins)}</div><div class="l">minutes with Ambrose</div></div><div class="tile"><div class="v">${known}</div><div class="l">cards held strong</div></div><div class="tile"><div class="v">${dueCards().length}</div><div class="l">due for review</div></div></div>
+<div class="card"><p class="eyebrow">Mastery by domain</p>${radar()}</div>
+<div class="card"><p class="eyebrow">Forgetting forecast · if you stopped today</p>${forecast()}</div>
+<div class="card"><p class="eyebrow">Accuracy by where you are</p><div style="margin-top:6px">${bars(S.agg.mode,[['drive','Driving'],['walk','Walking'],['desk','At a desk']])}</div><p class="eyebrow" style="margin-top:14px">By time of day</p><div style="margin-top:6px">${bars(S.agg.tod,[['morning','Morning'],['afternoon','Afternoon'],['evening','Evening'],['night','Night']])}</div><p class="eyebrow" style="margin-top:14px">By question type</p><div style="margin-top:6px">${bars(S.agg.kind,[['recall','Recall'],['scenario','Scenarios']])}</div></div>
+<div class="card"><p class="eyebrow">What the data says</p><ul class="small" style="margin:8px 0 0;padding-left:18px">${insights().map(x=>`<li style="margin-top:4px">${esc(x)}</li>`).join('')}</ul>${B.core.learning?`<p class="eyebrow" style="margin-top:14px">Ambrose's read</p><p style="margin-top:6px">${esc(B.core.learning)}</p>`:''}</div>`;
+}
+function radar(){
+  const vals=DOMS.map(([id])=>{const ms=MODULES.filter(m=>m.dom===id);return ms.reduce((a,m)=>a+mastery(m.id),0)/ms.length});
+  const cx=150,cy=130,R=86,n=DOMS.length,pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]};let g='';
+  [0.25,0.5,0.75,1].forEach(f=>{g+=`<polygon points="${DOMS.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,232,232,${f===1?0.16:0.07})"/>`});
+  DOMS.forEach((_,i)=>{const [x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,232,232,.06)"/>`});
+  g+=`<polygon points="${vals.map((v,i)=>pt(i,R*Math.max(0.04,v)).map(q=>q.toFixed(1)).join(',')).join(' ')}" fill="rgba(196,35,48,.28)" stroke="#c42330" stroke-width="1.5"/>`;
+  vals.forEach((v,i)=>{const [x,y]=pt(i,R*Math.max(0.04,v));g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="#efe8e7"/>`;const [lx,ly]=pt(i,R+22);g+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${DOMS[i][1]} ${Math.round(v*100)}</text>`});
+  return `<svg class="chart" viewBox="0 0 300 262" role="img" aria-label="Mastery by domain">${g}</svg>`;
+}
+function forecast(){
+  const ids=Object.keys(S.cards);if(!ids.length)return `<p class="small muted" style="margin-top:8px">Your forgetting curve appears after your first answers. It shows how much you'd still remember each day if you stopped now, and it flattens as reviews space out.</p>`;
+  const v=[];for(let d=0;d<=14;d++){const t=now()+d*DAY;v.push(ids.reduce((a,id)=>a+ret(S.cards[id],t),0)/ids.length)}
+  const W=300,H=130,l=30,r=12,tp=12,b=22,x=i=>l+i*(W-l-r)/14,y=q=>tp+(1-q)*(H-tp-b);
+  let g='';[0,0.5,1].forEach(q=>{g+=`<line x1="${l}" x2="${W-r}" y1="${y(q)}" y2="${y(q)}" stroke="rgba(255,232,232,.07)"/><text x="${l-6}" y="${y(q)+3}" text-anchor="end">${q*100}%</text>`});
+  const line=v.map((q,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(q).toFixed(1)).join(' ');
+  g+=`<path d="${line} L${x(14)} ${y(0)} L${x(0)} ${y(0)} Z" fill="rgba(196,35,48,.18)"/><path d="${line}" fill="none" stroke="#c42330" stroke-width="1.8"/>`;
+  g+=`<circle cx="${x(14)}" cy="${y(v[14]).toFixed(1)}" r="3.2" fill="#efe8e7"/><text x="${x(14)-6}" y="${(y(v[14])-8).toFixed(1)}" text-anchor="end" style="fill:#efe8e7">${Math.round(v[14]*100)}%</text>`;
+  [[0,'Today'],[7,'+7 days'],[14,'+14 days']].forEach(([i,t])=>{g+=`<text x="${x(i)}" y="${H-6}" text-anchor="${i===0?'start':i===14?'end':'middle'}">${t}</text>`});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Predicted retention over 14 days">${g}</svg>`;
+}
+function bars(o,labels){return labels.map(([k,l])=>{const x=o[k];const p=x&&x.n?Math.round(100*x.sum/x.n):null;return `<div class="hbar"><span>${l}</span><div class="bar"><i style="width:${p||0}%"></i></div><span class="num small ${p==null?'muted':''}" style="text-align:right">${p==null?'—':p+'%'}</span></div>`}).join('')}
+function insights(){
+  const out=[],a=S.agg,p=o=>o&&o.n>=4?o.sum/o.n:null;
+  const md=[['drive','in the car'],['walk','on foot'],['desk','at a desk']].map(([k,l])=>[l,p(a.mode[k])]).filter(x=>x[1]!=null).sort((x,y)=>y[1]-x[1]);
+  if(md.length>=2)out.push(`You recall best ${md[0][0]} (${pct(md[0][1])}) and worst ${md[md.length-1][0]} (${pct(md[md.length-1][1])}).`);
+  const td=['morning','afternoon','evening','night'].map(k=>[k,p(a.tod[k])]).filter(x=>x[1]!=null).sort((x,y)=>y[1]-x[1]);
+  if(td.length>=2)out.push(`Your sharpest time is the ${td[0][0]} (${pct(td[0][1])}). Your weakest is the ${td[td.length-1][0]}.`);
+  const sc=p(a.kind.scenario),rc=p(a.kind.recall);if(sc!=null&&rc!=null)out.push(sc>rc?`You do better applying ideas in scenarios (${pct(sc)}) than reciting them (${pct(rc)}). You learn by doing.`:`You recall ideas (${pct(rc)}) better than you apply them (${pct(sc)}). Ambrose will push more scenarios.`);
+  const r1=recentAcc(10),r0=recentAcc(10,10);if(r1!=null&&r0!=null&&Math.abs(r1-r0)>=0.1)out.push(r1>r0?`You're climbing: last 10 answers ${pct(r1)}, up from ${pct(r0)}.`:`You're slipping: last 10 answers ${pct(r1)}, down from ${pct(r0)}. Shorter, more frequent sessions help.`);
+  if(!out.length)out.push('Ambrose needs about twenty answers before he can say how you learn best. Keep going.');
+  return out;
+}
+
+/* ---------- SETTINGS ---------- */
+const GVOICES=[['Enceladus','breathy'],['Algenib','gravelly'],['Gacrux','mature'],['Charon','informative'],['Achernar','soft'],['Orus','firm'],['Iapetus','clear']];
+function vSettings(){
+  const vs=Voice.voices.slice(0,30),ms=S.set.models;
+  return `<div><p class="eyebrow">Settings</p><h2 class="dot-h" style="margin-top:6px">Ambrose's wiring</h2></div>
+<div><label class="lab" for="set-name">What he calls you</label><input type="text" id="set-name" value="${esc(S.name)}"></div>
+<div class="card"><h3>Mind · Gemini key</h3><p class="small muted" style="margin:4px 0 8px">${S.set.key?`Connected${ms?` · ${esc(ms.main)}${ms.tts?' · voice '+esc(ms.tts):''}`:''}.`:'Not connected. Free key from aistudio.google.com/apikey.'}</p><input type="text" id="set-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${S.set.key?'•••• saved — paste to replace':'AIza…'}"><div class="row" style="margin-top:8px"><button class="btn red grow" data-act="key-set">${S.set.key?'Replace key':'Connect'}</button>${S.set.key?'<button class="btn ghost" data-act="key-clear">Remove</button>':''}</div></div>
+<div><label class="lab">Ears</label><div class="seg">${[['auto','Auto'],['gemini','Gemini mic'],['apple','Safari dictation'],['off','Off']].map(([k,l])=>`<button data-act="set-ear" data-v="${k}" class="${S.set.ear===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">Now: ${earLabel()}. Gemini mic is hands-free and works from a home-screen icon. Safari dictation needs no key but only works in a Safari tab.</p></div>
+<div><label class="lab">Voice</label><div class="seg">${[['device','Phone voice'],['natural','Natural (Gemini)']].map(([k,l])=>`<button data-act="set-voice" data-v="${k}" class="${S.set.voice===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">${S.set.voice==='natural'?(S.set.key&&ms&&ms.tts?'Natural voice uses your free allowance quickly. When it runs out he switches to the phone voice by himself.':'Needs the Gemini key first.'):'For a better phone voice on iPhone: Settings › Accessibility › Spoken Content › Voices › English › download Arthur or Daniel (Enhanced), then pick it below.'}</p></div>
+${S.set.voice==='natural'?`<div><label class="lab">Natural voice</label><div class="chips">${GVOICES.map(([v,l])=>`<button class="chip ${S.set.gv===v?'on':''}" data-act="set-gv" data-v="${v}">${v} · ${l}</button>`).join('')}</div></div>`:''}
+<div><label class="lab" for="set-dv">Phone voice (best matches first)</label><select id="set-dv">${vs.map(v=>`<option value="${esc(v.voiceURI)}" ${Voice.pick()===v?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('')||'<option>No voices found yet</option>'}</select></div>
+<div><label class="lab" for="set-pitch">Phone voice pitch · lower is creepier <span class="num">${S.set.pitch.toFixed(2)}</span></label><input type="range" id="set-pitch" min="0.5" max="1.2" step="0.02" value="${S.set.pitch}"></div>
+<div><label class="lab" for="set-rate">Phone voice pace <span class="num">${S.set.rate.toFixed(2)}</span></label><input type="range" id="set-rate" min="0.7" max="1.3" step="0.02" value="${S.set.rate}"></div>
+<div><label class="lab" for="set-think">Thinking time when he can't hear you <span class="num">${S.set.think}s</span></label><input type="range" id="set-think" min="3" max="15" step="1" value="${S.set.think}"></div>
+<div class="row"><button class="btn red grow" data-act="test-voice">Hear Ambrose</button><button class="btn grow" data-act="test-ear">Test my mic</button></div>
+<p class="small muted" id="ear-test"></p>
+<hr class="sep">
+<div class="card"><h3>Wipe everything</h3><p class="small muted" style="margin:4px 0 10px">Progress, brain and settings on this phone. Save a backup first if you want to keep it.</p><button class="btn full" data-act="reset">${resetArmed?'Tap again to wipe for good':'Wipe all data'}</button></div>`;
+}
+let resetArmed=false;
+
+/* ================= SHEET / TOAST / COPY ================= */
+let sheetKind=null;
+function openSheet(title,html,keep){const w=$('#sheet'),b=$('#sheet-body');const st=keep?b.scrollTop:0;$('#sheet-ttl').textContent=title;b.innerHTML=html;w.hidden=false;b.scrollTop=st}
+function closeSheet(){$('#sheet').hidden=true;sheetMod=null;sheetKind=null;resetArmed=false}
+let toastT=0;
+function toast(t,msg){const el=$('#toast');el.innerHTML=`<b>${esc(t)}</b>${esc(msg)}`;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{el.hidden=true},5600)}
+function copyText(text,label){
+  const fallback=()=>{sheetMod=null;sheetKind='copy';openSheet('copy',`<p class="small muted">Select all of this and copy it.</p><textarea class="copybox" id="copybox" readonly>${esc(text)}</textarea>`);setTimeout(()=>{const c=$('#copybox');if(c){c.focus();c.select()}},60)};
+  try{navigator.clipboard.writeText(text).then(()=>toast('Copied',label)).catch(fallback)}catch(e){fallback()}
+}
+function status(){
+  const l=$('#d-link'),e=$('#d-ear'),s=$('#d-sync');
+  if(l)l.className='sdot'+(AI()?' on':S.set.key?' half':'');
+  if(e)e.className='sdot'+(earMode()==='rec'?' on':earMode()==='web'?' half':'');
+  if(s)s.className='sdot'+(now()-(S.lastBackup||0)<7*DAY?' on':(B.facts.length+B.qa.length)>5?' half':'');
+}
+
+/* ================= RENDER ================= */
+let route=(location.hash||'').slice(1);if(!ROUTES.includes(route))route='transit';
+function render(){
+  const v=$('#view');const keepVals={};v.querySelectorAll('textarea[id],input[id]').forEach(el=>{keepVals[el.id]=el.value});
+  const sameRoute=v.dataset.route===route;const st=sameRoute?v.scrollTop:0;
+  v.innerHTML={transit:vTransit,path:vPath,ambrose:vAmbrose,pulse:vPulse}[route]();v.dataset.route=route;
+  Object.entries(keepVals).forEach(([id,val])=>{const el=document.getElementById(id);if(el&&!el.value)el.value=val});
+  v.scrollTop=st;$('#ttl').textContent='umbra — '+route;
+  document.querySelectorAll('[data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===route));
+  if(route==='ambrose'&&subA==='talk'){const c=$('#chat');if(c&&c.lastElementChild)c.lastElementChild.scrollIntoView({block:'end'})}
+  if(sheetKind==='mod'&&sheetMod&&!$('#sheet').hidden)openModule(sheetMod,true);
+  status();
+}
+function goRoute(r){if(!ROUTES.includes(r))return;route=r;if(location.hash!=='#'+r)location.hash=r;else render();$('#view').scrollTop=0}
+addEventListener('hashchange',()=>{const r=location.hash.slice(1);if(ROUTES.includes(r)){route=r;render()}});
+
+/* ================= ACTIONS ================= */
+async function connectKey(k){
+  k=String(k||'').trim();if(!k){toast('Key','Paste the key first.');return false}
+  const old=S.set.key;S.set.key=k;S.set.models=null;
+  try{await Gem.setup();Gem.cool=0;touch('s');toast('Ambrose',"Connected. I can hear you now. Don't make me regret it.");return true}
+  catch(e){S.set.key=old;touch('s');toast('Key',e&&e.code==='bad_key'?"Google says that key isn't valid. Copy it again from AI Studio.":e&&e.code==='rate_limited'?'Key works but the free allowance is busy. Try again in a minute.':"Couldn't reach Google. Check your signal and try again.");return false}
+}
+async function micInto(id,btn){
+  const ta=document.getElementById(id);if(!ta)return;
+  if(btn.dataset.live){WebRec.stop();Rec.stop();return}
+  const base=ta.value.trim()?ta.value.trim()+' ':'';btn.dataset.live='1';btn.classList.add('red');
+  try{
+    if(WebRec.ok()){const t=await WebRec.listen({maxWait:10000,onHeard:x=>{ta.value=base+x},fromTap:true});if(t)ta.value=base+t}
+    else if(AI()&&Rec.ok()){Aud.unlock();btn.textContent='Listening…';const wav=await Rec.capture({maxWait:10000,endSilence:2200});
+      if(wav){btn.textContent='Transcribing…';const r=await Gem.json('Transcribe the attached recording verbatim. Reply with only JSON: {"text":"…"}',{audio:wav});if(r&&r.text)ta.value=base+String(r.text)}}
+  }catch(e){handleAIErr(e)}
+  delete btn.dataset.live;btn.classList.remove('red');btn.innerHTML=MIC+' Speak';
+}
+async function act(a,el){
+  switch(a){
+  case 'begin':Sess.start({mode:S.set.mode,len:S.set.len,primer:S.set.primer});break;
+  case 'deepscan':Sess.start({mode:S.set.mode,len:'inf',kind:'interview'});break;
+  case 'play-mod':{const id=el.dataset.id;closeSheet();Sess.start({mode:S.set.mode,len:'10',focus:id});break}
+  case 'primer':S.set.primer=!S.set.primer;touch('s');render();break;
+  case 'key-save':{el.disabled=true;el.textContent='Connecting…';const ok=await connectKey(($('#key-in')||{}).value);if(ok){const i=$('#key-in');if(i)i.value=''}render();break}
+  case 'key-set':{el.disabled=true;const ok=await connectKey(($('#set-key')||{}).value);openSheet('settings',vSettings(),true);if(ok)render();break}
+  case 'key-clear':S.set.key='';S.set.models=null;touch('s');openSheet('settings',vSettings(),true);render();break;
+  case 'settings':sheetMod=null;sheetKind='settings';Voice.loadVoices();openSheet('settings',vSettings());break;
+  case 'close-sheet':closeSheet();break;
+  case 'set-ear':S.set.ear=el.dataset.v;touch('s');openSheet('settings',vSettings(),true);render();break;
+  case 'set-voice':S.set.voice=el.dataset.v;touch('s');openSheet('settings',vSettings(),true);render();break;
+  case 'set-gv':S.set.gv=el.dataset.v;Voice.cache.clear();touch('s');openSheet('settings',vSettings(),true);break;
+  case 'test-voice':{Voice.stop();Voice.unlock();Voice.say(`Hello, ${S.name}. I've been looking forward to this. I already know more about you than you'd expect, and by the end, I'll know the rest.`).catch(()=>{});break}
+  case 'test-ear':{const out=$('#ear-test');const m=earMode();if(m==='none'){if(out)out.textContent='No way to listen on this page yet. Add the key, or open it in a Safari tab.';break}
+    Aud.unlock();if(out)out.textContent='Say something…';
+    if(m==='web'){const t=await WebRec.listen({maxWait:8000,fromTap:true,onHeard:x=>{if(out)out.textContent='Heard: '+x}});if(out)out.textContent=t?'Heard: “'+t+'”. Ambrose can hear you.':"Heard nothing. Check Siri & Dictation is on, and Safari's microphone permission."}
+    else{const wav=await Rec.capture({maxWait:8000});if(!wav){if(out)out.textContent=Rec.denied?'Microphone blocked. Settings › Apps › Safari › Microphone › Allow.':'Heard nothing. Speak a little louder.';break}
+      if(out)out.textContent='Got it, transcribing…';try{const r=await Gem.json('Transcribe the attached recording verbatim. Reply with only JSON: {"text":"…"}',{audio:wav});if(out)out.textContent='Heard: “'+String(r&&r.text||'')+'”. Ambrose can hear you.'}catch(e){handleAIErr(e);if(out)out.textContent='Recorded fine, but Gemini didn\'t answer. Check the key.'}}
+    break}
+  case 'reset':if(!resetArmed){resetArmed=true;openSheet('settings',vSettings(),true);break}
+    {const key=S.set.key,models=S.set.models;S=DEF_S();D=DEF_D();B=DEF_B();fix();S.set.key=key;S.set.models=models;touch('sdb');resetArmed=false;closeSheet();render();toast('Umbra','Everything wiped. Ambrose has forgotten you. For now.')}break;
+  case 'db-grade':{const c=cardById(el.dataset.id);const p=S.pending.find(x=>x.id===el.dataset.id);if(c)gradeCard(c,+el.dataset.s,p?p.mode:'drive');render();break}
+  case 'iq-send':{const ta=$('#iq-ans');const ans=ta&&ta.value.trim();if(!ans){toast('Ambrose','Say something first. Anything.');break}
+    const q=curIQ();el.disabled=true;el.textContent='Filing…';rememberAsked(q);const r=await absorbText(q,ans,'interview');
+    S.lastReact=r.say;S.curIQ='';if(r.followup)S.iqQ.unshift(r.followup);
+    if(AI()&&S.iqQ.length<2){genBatch(true).then(items=>{items.forEach(it=>S.iqQ.push(String(it.q)));touch('s')}).catch(handleAIErr)}
+    S.unans=S.unans.filter(u=>u.q!==q);touch('s');if(ta)ta.value='';render();break}
+  case 'iq-skip':S.curIQ='';S.lastReact='';touch('s');render();break;
+  case 'use-unans':{const u=S.unans.find(x=>x.id===el.dataset.id);if(u){S.curIQ=u.q;S.lastReact='';touch('s');render();$('#view').scrollTop=0}break}
+  case 'mic':micInto(el.dataset.target,el);break;
+  case 'chat-send':{const ta=$('#chat-in');const text=ta&&ta.value.trim();if(!text||!AI())break;ta.value='';S.chat.push({r:'u',c:text});render();
+    const chat=$('#chat');const bub=document.createElement('div');bub.className='msg amb';bub.textContent='Thinking…';chat.appendChild(bub);bub.scrollIntoView({block:'end'});
+    const sys=`${PERSONA()}\n\n${ctxBlock(40)}\n\nYou're chatting with ${S.name||'Joe'} by text. Keep replies under 120 words unless he asks you to go deep. Plain text, no markdown, no bullet lists. If you learn something new and lasting about him, add a final separate line: NOTE: <one short third-person fact>.`;
+    const strip=t=>t.split('\n').filter(l=>!/^\s*NOTE:/i.test(l)).join('\n').trim();
+    try{const out=await Gem.chat(sys,S.chat.slice(-16).map(m=>({role:m.r==='u'?'user':'assistant',content:m.c})));addFacts(out.split('\n').filter(l=>/^\s*NOTE:/i.test(l)),'chat');S.chat.push({r:'a',c:strip(out)||'…'})}
+    catch(e){handleAIErr(e);bub.textContent='I lost the thread. Ask me again.'}
+    if(S.chat.length>40)S.chat.splice(0,S.chat.length-40);touch('s');render();break}
+  case 'rethink':{if(!AI())break;el.disabled=true;el.textContent='Ambrose is thinking about you…';
+    try{const r=await Gem.json(nm(`${ctxBlock(250)}\n\nRecent interview answers:\n${B.qa.slice(-25).map(x=>'Q: '+x.q+'\nA: '+x.a).join('\n')||'(none)'}\n\nRecent field logs:\n${B.field.slice(-10).map(f=>'- '+f.text).join('\n')||'(none)'}\n\nUpdate your private model of Joe. Reply with only JSON: {"profile":"150 to 220 words in second person: what you believe about him as a person, seller and learner; specific, slightly unnerving in its accuracy, warm underneath; only claims supported by the data","learning":"2 or 3 sentences on how he learns best, citing the learning data where it exists","focus":"1 or 2 sentences on what he should work on next and why","hypotheses":["4 statements beginning 'I suspect' about him, which he can confirm or deny"]}`),{tier:'main'});
+      B.core.profile=String(r.profile||'');B.core.learning=String(r.learning||'');B.core.focus=String(r.focus||'');B.core.hyp=(Array.isArray(r.hypotheses)?r.hypotheses:[]).slice(0,6).map(t=>({id:uid(),text:String(t)}));touch('b')}
+    catch(e){handleAIErr(e);if(e&&e.code==='invalid_json')toast('Ambrose','I muddled my notes. Try once more.')}render();break}
+  case 'hyp':{const h=B.core.hyp.find(x=>x.id===el.dataset.id);if(h){addFacts([(el.dataset.v==='1'?'Confirmed: ':'Not true: ')+h.text.replace(/^I suspect (that )?/i,'')],'notebook');B.core.hyp=B.core.hyp.filter(x=>x!==h);touch('b')}render();break}
+  case 'field-log':{const ta=$('#field-in');const text=ta&&ta.value.trim();if(!text)break;const f={id:uid(),t:now(),text,an:''};B.field.push(f);touch('b');ta.value='';render();if(AI())decodeField(f);break}
+  case 'field-decode':{const f=B.field.find(x=>x.id===el.dataset.id);if(f){el.disabled=true;el.textContent='Decoding…';decodeField(f)}break}
+  case 'fact-del':{B.facts=B.facts.filter(f=>f.id!==el.dataset.id);touch('b');render();break}
+  case 'bk-save':{const ok=download(`umbra-backup-${ymd(now())}.json`,backupJSON(),'application/json');if(ok){S.lastBackup=now();touch('s');render();toast('Backup','Saved to your Files (Downloads). Keep it somewhere safe, like iCloud Drive.')}break}
+  case 'bk-copy':copyText(backupJSON(),'Backup copied. Paste it into Notes or Obsidian to keep it safe.');S.lastBackup=now();touch('s');break;
+  case 'md-save':{download(`Umbra brain ${ymd(now())}.md`,brainMarkdown(),'text/markdown');toast('Obsidian','Saved. Move the .md file into your Obsidian vault folder.');break}
+  case 'bk-restore':{const ta=$('#bk-in');try{restoreJSON(ta.value);ta.value='';render();toast('Restored','Ambrose remembers everything again.')}catch(e){toast('Restore',"That isn't an Umbra backup. Paste the whole file's text.")}break}
+  case 'hunt':{const m=MOD[el.dataset.id];el.disabled=true;el.textContent='Thinking…';
+    try{const r=await Gem.json(nm(`Joe is studying "${m.title}" (${m.sum}). His mastery of it is ${Math.round(mastery(m.id)*100)}%. Known about him: ${B.core.profile||'little yet'}.\nSuggest 5 YouTube search queries that will find strong videos to go deeper, tuned to his job in commercial property sales and to the parts of this topic people usually misunderstand. Reply with only JSON: {"queries":["…"]}`));
+      huntRes[m.id]=(Array.isArray(r.queries)?r.queries:[]).map(String).slice(0,5)}catch(e){handleAIErr(e)}openModule(m.id,true);break}
+  }
+}
+async function decodeField(f){
+  try{const text=await Gem.chat(PERSONA(),[{role:'user',content:nm(`${ctxBlock(20)}\n\nJoe logged this from the field (a real viewing, call or negotiation):\n"${f.text}"\n\nAs Ambrose, decode it with the psychology he's studying: what was probably going on in the other person, what Joe did well, and one concrete line he could say next time. Under 140 words, plain text, no lists. If it reveals something lasting about Joe, add a final separate line: NOTE: <one short third-person fact>.`)}]);
+    f.an=text.split('\n').filter(l=>!/^\s*NOTE:/i.test(l)).join('\n').trim();addFacts(text.split('\n').filter(l=>/^\s*NOTE:/i.test(l)),'field');touch('b')}
+  catch(e){handleAIErr(e)}render();
+}
+
+/* ================= EVENTS ================= */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const go=t.closest('[data-go]');if(go){goRoute(go.dataset.go);return}
+  const vid=t.closest('[data-vid]');if(vid){S.watched[vid.dataset.vid]=now();touch('s');setTimeout(()=>{if(sheetKind==='mod')openModule(sheetMod,true)},500);return}
+  const md=t.closest('[data-mod]');if(md){openModule(md.dataset.mod);return}
+  const sm=t.closest('[data-set-mode]');if(sm){S.set.mode=sm.dataset.setMode;touch('s');render();return}
+  const sl=t.closest('[data-set-len]');if(sl){S.set.len=sl.dataset.setLen;touch('s');render();return}
+  const sub=t.closest('[data-sub]');if(sub){subA=sub.dataset.sub;render();return}
+  const g=t.closest('[data-g]');if(g){Sess.gradeVal=+g.dataset.g;return}
+  const np=t.closest('[data-np]');if(np){const k=np.dataset.np;if(k==='pause')Sess.togglePause();else if(k==='skip')Sess.skip();else if(k==='replay')Sess.again();else if(k==='end')Sess.end();return}
+  if(t.closest('#np-tap')){if(Sess.tap())return;Sess.togglePause();return}
+  const a=t.closest('[data-act]');if(a){act(a.dataset.act,a)}
+  if(t.id==='sheet')closeSheet();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('#sheet').hidden)closeSheet();
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[data-act="close-sheet"]')){e.preventDefault();closeSheet()}
+  if(!$('#np').hidden&&e.target.id==='np-tap'&&(e.key===' '||e.key==='Enter')){e.preventDefault();if(!Sess.tap())Sess.togglePause()}
+});
+document.addEventListener('input',e=>{
+  const id=e.target.id;const lbl=()=>e.target.previousElementSibling.querySelector('.num');
+  if(id==='set-rate'){S.set.rate=+e.target.value;touch('s');lbl().textContent=S.set.rate.toFixed(2)}
+  if(id==='set-pitch'){S.set.pitch=+e.target.value;touch('s');lbl().textContent=S.set.pitch.toFixed(2)}
+  if(id==='set-think'){S.set.think=+e.target.value;touch('s');lbl().textContent=S.set.think+'s'}
+  if(id==='set-name'){S.name=e.target.value.trim().slice(0,30)||'Joe';touch('s');clearTimeout(window.__nmT);window.__nmT=setTimeout(render,600)}
+});
+document.addEventListener('change',e=>{if(e.target.id==='set-dv'){S.set.dv=e.target.value;touch('s')}});
+
+/* ================= BOOT ================= */
+function clock(){const d=new Date();const c=$('#clock');if(c)c.textContent=d.toLocaleDateString('en-GB',{weekday:'short'})+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+Voice.loadVoices();if(Voice.hasWeb()){try{speechSynthesis.onvoiceschanged=()=>{Voice.loadVoices();if(sheetKind==='settings'&&!$('#sheet').hidden)openSheet('settings',vSettings(),true)}}catch(e){}}
+render();Field.start();clock();setInterval(clock,15000);
+if(S.set.key&&!S.set.models)Gem.setup().then(render).catch(()=>{});
+addEventListener('pagehide',persist);
+
+</script>
+</body>
+</html>
