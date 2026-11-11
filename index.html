@@ -611,7 +611,8 @@ const Gem={cool:0,ttsOff:0,
     if(body){const d=ymd(now());if(!S.usage||S.usage.d!==d)S.usage={d,n:0};S.usage.n++;touch('s')}
     const r=await fetch(G+path,{method:body?'POST':'GET',headers:Object.assign({'x-goog-api-key':S.set.key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
     if(!r.ok){let msg='';try{msg=(await r.json()).error.message||''}catch(e){}
-      const code=r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
+      const low=String(msg).toLowerCase();
+      const code=/credit|prepay|billing|spend cap|spending cap|payment/.test(low)?'billing':r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
       throw {code,message:msg,status:r.status}}
     return r.json();
   },
@@ -632,8 +633,20 @@ const Gem={cool:0,ttsOff:0,
   async json(prompt,o={}){
     const parts=[{text:prompt}];if(o.audio)parts.push({inline_data:{mime_type:'audio/wav',data:o.audio}});
     const body={systemInstruction:{parts:[{text:PERSONA()}]},contents:[{role:'user',parts}],generationConfig:{responseMimeType:'application/json',temperature:o.temp||0.8}};
-    try{return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}
-    catch(e){if(e&&e.code==='rate_limited'&&(o.tier||'quick')!=='quick')return this.json(prompt,Object.assign({},o,{tier:'quick'}));if(e&&e.code==='no_model'&&S.set.models){S.set.models=null;await this.setup().catch(()=>{});return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}throw e}
+    const tier=o.tier||'quick',first=this.m(tier);
+    const run=async model=>this.parse(this.text(await this.req('/models/'+model+':generateContent',body)));
+    try{return await run(first)}
+    catch(e){
+      if(e&&e.code==='rate_limited'&&tier!=='quick')return this.json(prompt,Object.assign({},o,{tier:'quick'}));
+      if(e&&['bad_request','no_model','upstream_error'].includes(e.code)){
+        for(const m of ['gemini-flash-lite-latest','gemini-flash-latest','gemini-2.5-flash-lite','gemini-2.5-flash']){
+          if(m===first)continue;
+          try{const out=await run(m);S.set.models=Object.assign({},S.set.models||{},{[tier]:m});touch('s');return out}
+          catch(e2){if(e2&&['rate_limited','billing','bad_key'].includes(e2.code))throw e2}
+        }
+      }
+      throw e;
+    }
   },
   async chat(system,turns,tier='main'){
     const contents=[];turns.forEach(t=>{const role=t.role==='assistant'?'model':'user';const last=contents[contents.length-1];if(last&&last.role===role)last.parts[0].text+='\n'+t.content;else contents.push({role,parts:[{text:t.content}]})});
@@ -656,7 +669,8 @@ const Gem={cool:0,ttsOff:0,
 const AI=()=>Gem.ready();
 function handleAIErr(e){
   const c=e&&e.code;
-  if(c==='bad_key'){toast('Ambrose',"Google rejected the key. Check it under the gear icon.")}
+  if(c==='billing'){Gem.cool=now()+5*60e3;status();toast('Gemini billing',"Google won't run requests until there's credit. AI Studio › Billing › add credit (e.g. $10). It said: "+String(e.message||'').slice(0,140))}
+  else if(c==='bad_key'){toast('Ambrose',"Google rejected the key. Check it under the gear icon.")}
   else if(c==='rate_limited'){Gem.cool=now()+10*60e3;status();toast('Ambrose',"Gemini allowance or credit used up. I'll mark you myself and try again in ten minutes.")}
   else if(c==='refused'){}
   else if(c&&c!=='invalid_json'){Gem.cool=now()+60e3;status()}
@@ -1435,6 +1449,7 @@ ${S.set.voice==='natural'?`<div><label class="lab">Natural voice</label><div cla
 <div><label class="lab" for="set-rate">Phone voice pace <span class="num">${S.set.rate.toFixed(2)}</span></label><input type="range" id="set-rate" min="0.7" max="1.3" step="0.02" value="${S.set.rate}"></div>
 <div><label class="lab" for="set-think">Thinking time when he can't hear you <span class="num">${S.set.think}s</span></label><input type="range" id="set-think" min="3" max="15" step="1" value="${S.set.think}"></div>
 <div class="row"><button class="btn red grow" data-act="test-voice">Hear Ambrose</button><button class="btn grow" data-act="test-ear">Test my mic</button></div>
+<button class="btn full" data-act="test-mind">Check Ambrose\'s mind (Gemini)</button>
 <p class="small muted" id="ear-test"></p>
 <hr class="sep">
 <div class="card"><h3>Wipe everything</h3><p class="small muted" style="margin:4px 0 10px">Progress, brain and settings on this phone. Save a backup first if you want to keep it.</p><button class="btn full" data-act="reset">${resetArmed?'Tap again to wipe for good':'Wipe all data'}</button></div>`;
@@ -1507,11 +1522,14 @@ async function act(a,el){
   case 'set-voice':S.set.voice=el.dataset.v;touch('s');openSheet('settings',vSettings(),true);render();break;
   case 'set-gv':S.set.gv=el.dataset.v;Voice.cache.clear();touch('s');openSheet('settings',vSettings(),true);break;
   case 'test-voice':{Voice.stop();Voice.unlock();Voice.say(`Hello, ${S.name}. I've been looking forward to this. I already know more about you than you'd expect, and by the end, I'll know the rest.`).catch(()=>{});break}
+  case 'test-mind':{const out=$('#ear-test');if(!S.set.key){if(out)out.textContent='No key yet. Paste it in the Mind box above.';break}if(out)out.textContent='Asking Gemini…';Gem.cool=0;
+    try{const r=await Gem.json('Reply with only JSON: {"ok": true}');if(out)out.textContent=r&&r.ok?'Mind OK. Gemini is answering ('+Gem.m('quick')+').':'Gemini answered oddly: '+JSON.stringify(r).slice(0,80)}
+    catch(e){if(out)out.textContent='Google refused: '+(e&&e.status?e.status+' ':'')+(e&&(e.message||e.code)||'no reply')}status();break}
   case 'test-ear':{const out=$('#ear-test');const m=earMode();if(m==='none'){if(out)out.textContent='No way to listen on this page yet. Add the key, or open it in a Safari tab.';break}
     Aud.unlock();if(out)out.textContent='Say something…';
     if(m==='web'){const t=await WebRec.listen({maxWait:8000,fromTap:true,onHeard:x=>{if(out)out.textContent='Heard: '+x}});if(out)out.textContent=t?'Heard: “'+t+'”. Ambrose can hear you.':"Heard nothing. Check Siri & Dictation is on, and Safari's microphone permission."}
     else{const wav=await Rec.capture({maxWait:8000,fixedLen:6000,onState:s=>{if(out&&s==='speaking')out.textContent='Hearing you… keep going, then stop';if(out&&s==='fixed')out.textContent='Recording 6 seconds… say something'}});if(!wav){if(out)out.textContent=Rec.denied?'Microphone blocked. Settings › Apps › Safari › Microphone › Allow.':'Heard nothing. Speak a little louder.';break}
-      if(out)out.textContent='Got it, transcribing…';try{const r=await Gem.json('Transcribe the attached recording verbatim. Reply with only JSON: {"text":"…"}',{audio:wav});if(out)out.textContent='Heard: “'+String(r&&r.text||'')+'”. Ambrose can hear you.'}catch(e){handleAIErr(e);if(out)out.textContent='Recorded fine, but Gemini didn\'t answer. Check the key.'}}
+      if(out)out.textContent='Got it, transcribing…';try{const r=await Gem.json('Transcribe the attached recording verbatim. Reply with only JSON: {"text":"…"}',{audio:wav});if(out)out.textContent='Heard: “'+String(r&&r.text||'')+'”. Ambrose can hear you.'}catch(e){handleAIErr(e);if(out)out.textContent='Your mic works. Google refused the request: '+(e&&(e.message||e.code)||'no reply')}}
     break}
   case 'reset':if(!resetArmed){resetArmed=true;openSheet('settings',vSettings(),true);break}
     {const key=S.set.key,models=S.set.models;S=DEF_S();D=DEF_D();B=DEF_B();fix();S.set.key=key;S.set.models=models;touch('sdb');resetArmed=false;closeSheet();render();toast('Umbra','Everything wiped. Ambrose has forgotten you. For now.')}break;
