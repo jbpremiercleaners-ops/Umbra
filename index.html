@@ -575,6 +575,88 @@ const OUTROS=["That'll do for now, Joe. I've written it all down. I always do.",
 const ACKS=["Interesting. I'll keep that.","Noted. That tells me more than you think.","Thank you, Joe. That goes in the file.","Hm. I had a feeling you'd say that.","Good. Honest answers are the useful ones."];
 const RIGHT=["Good. That's it.","Yes. You were listening.","Correct. I knew you had that one.","Exactly right.","That's the one. Well done."];
 
+/* ===== Life-first content ===== */
+const WORK=[['viewings','Viewings'],['offers','Negotiating offers and terms'],['landlords','Landlords and sellers'],['tenants','Tenants and buyers'],['calls','Calls and enquiries'],['hots','Heads of Terms'],['brochures','Brochures and marketing'],['pitch','Pitching for instructions'],['fees','Negotiating our fee'],['cold','Cold calling'],['closing','Closing deals myself'],['team','Managing people']];
+// Which kind of work each module's "On the deal" line is about.
+const MOD_WORK={os:'offers',inner:'calls',body:'viewings',face:'offers',persuade:'offers',price:'offers',negotiate:'offers',close:'pitch',lies:'offers',covert:'pitch',triad:'offers',manip:'fees',crowd:'viewings',power:'offers',mass:'viewings'};
+// Module order when sessions are mostly about Joe rather than the job.
+const LIFE_ORDER=['inner','os','triad','manip','body','face','lies','crowd','power','persuade','mass','covert','negotiate','price','close'];
+// After each lesson: turn the idea back on his own life.
+const LIFE_BRIDGE={
+os:"Think of a decision you made fast this week, before you'd really thought about it. What was that gut reaction protecting you from?",
+inner:"Which feeling knocks you off course most often? And where does it usually start?",
+body:"Whose body language do you know best in your life? What does it tell you before they've said a word?",
+face:"Whose face can you read better than they'd like? What do you see that they think they're hiding?",
+persuade:"Which one works on you the most? Reciprocity, scarcity, authority, liking, social proof or commitment? Give me a time it got you.",
+price:"What's something you paid too much for because of how it was framed?",
+negotiate:"Who's the hardest person in your personal life to negotiate with? What happens when you try?",
+close:"What's something you've wanted for ages but never actually asked for? What stops you?",
+lies:"When do you lie to keep the peace? And who do you do it with most?",
+covert:"Who in your life influences you without you noticing? How do they do it?",
+triad:"Have you ever been close to someone with a bit of the dark triad in them? What did they get from you?",
+manip:"Which of these tactics has worked on you before? What made you fall for it?",
+crowd:"When did you last go along with a group when you knew they were wrong? What did it feel like?",
+power:"Where do you feel powerful, and where do you feel small? What's different about those places?",
+mass:"Which belief of yours came from repetition rather than evidence? Be honest."
+};
+const LIFE_IQ=[
+"What did you learn about money from watching your parents? Not the amounts. The feelings.",
+"When you were a kid, what got you praised? Do you still chase it?",
+"Which emotion do you find hardest to show in front of people?",
+"When you're angry, what do you actually do with it? Where does it go?",
+"What do you think about in the car when nobody's talking to you?",
+"Who do you become when you're under pressure? Describe him to me.",
+"What do you do when you feel embarrassed?",
+"When something goes wrong, what's the story you tell yourself about why?",
+"When do you feel most like yourself?",
+"What are you most afraid people will find out about you? You can keep it vague.",
+"Who do you compare yourself to? And what does it do to you?",
+"What's the voice in your head like when you mess up? Whose voice does it sound like?",
+"How do you react when someone you care about is disappointed in you?",
+"What do you need from people that you find hard to ask for?",
+"When did you last feel properly calm? What was different that day?",
+"What do you avoid thinking about?",
+"What's one thing about how you were raised that you're determined to do differently?",
+"What makes you feel respected? And what makes you feel dismissed?",
+"When someone criticises you, what's your first move? Defend, agree, or go quiet?",
+"What would the people closest to you say is your worst habit with them?",
+"What are you chasing right now? And what are you running from?",
+"How do you know you're stressed, before you'll admit it to yourself?",
+"Who do you trust completely? What did they do to earn it?",
+"Picture yourself at forty. Who's around you, and what are you proud of?",
+"What do you do with jealousy when it turns up?",
+"What did you believe about yourself as a teenager that turned out to be wrong?",
+"What kind of people drain you? And what kind fill you back up?",
+"When you're alone in the evening, what do you reach for? Why that?",
+"When you've let yourself down, how do you talk to yourself?",
+"What makes you impatient? And what's underneath the impatience?",
+"What decision are you avoiding right now?",
+"Which part of yourself do you keep hidden at work?",
+"What do you want more of in your life that isn't money?",
+"Who understands you best? What do they see that other people miss?",
+"When was the last time you changed your mind about something important? What changed it?",
+"What do you do to feel in control when things feel out of control?",
+"Which compliment do you secretly want to hear more than any other?",
+"When you walk away from an argument, what do you replay?",
+"What scares you about getting what you want?",
+"What's a small thing that ruins your mood faster than it should?"
+];
+// Short psychology lessons about the mind in everyday life, used between questions.
+const LIFE_CONCEPTS=[
+{id:'spotlight',name:'The spotlight effect',what:"You think people notice you far more than they do. In studies, people wearing an embarrassing T-shirt guessed half the room noticed. About a quarter did.",ex:"Next time you feel watched or judged, ask: who here is actually thinking about me right now? Usually nobody.",k:['notice','less','think']},
+{id:'negbias',name:'Negativity bias',what:"Bad things land harder and stick longer than good things of the same size. It kept your ancestors alive. Now it makes one bad comment outweigh ten good ones.",ex:"Tonight, write down three things that went right today. It's not soppy. It's counterweight.",k:['bad','stronger','good']},
+{id:'dissonance',name:'Cognitive dissonance',what:"When what you do clashes with what you believe, the discomfort pushes you to change the belief, not the behaviour. It's why people defend bad decisions.",ex:"Find one decision you keep defending. Ask: would I make it again today, knowing what I know?",k:['clash','belief','behaviour']},
+{id:'fae',name:'The fundamental attribution error',what:"When others mess up, you blame their character. When you mess up, you blame the situation. Everyone does it.",ex:"Next time someone annoys you, give them the excuse you'd give yourself. See if the anger drops.",k:['character','situation','blame']},
+{id:'hedonic',name:'Hedonic adaptation',what:"Whatever you get, you get used to. The car, the pay rise, the new flat. The buzz fades back to your normal in weeks or months.",ex:"Before the next thing you chase, ask what you'll feel six months after you've got it.",k:['used','fade','back']},
+{id:'locus',name:'Locus of control',what:"Some people feel their life is mostly shaped by what they do. Others feel it's done to them. The first group tends to cope and achieve better.",ex:"Catch yourself saying 'they made me' this week. Swap it for 'I chose to', and see how it feels.",k:['control','choose','shaped']},
+{id:'sunk',name:'The sunk cost trap',what:"You keep going with something because of what you've already put in, not because of what it'll give you from here.",ex:"Pick one thing you're carrying on with. If you were starting fresh today, would you start it?",k:['already','put','continue']},
+{id:'contagion',name:'Emotional contagion',what:"Moods spread. You pick up the tension, flatness or energy of the people around you without noticing, and they pick up yours.",ex:"Before your next tense conversation, slow your breathing first. Watch whether they slow down too.",k:['spread','mood','catch']},
+{id:'imposter',name:'The imposter feeling',what:"Feeling like a fraud who'll be found out is common in capable people, especially when they're moving up. The feeling isn't evidence.",ex:"Write down three things you did well this month that you'd praise in a mate. Read them when the feeling turns up.",k:['fraud','capable','feeling']},
+{id:'attach',name:'Attachment styles',what:"How you learned to get closeness as a kid shapes how you handle it as an adult: secure, anxious or avoidant. The labels are rough, but the patterns are real and they can change.",ex:"Notice what you do when someone close goes quiet on you. Chase, withdraw, or wait calmly?",k:['secure','anxious','avoidant']},
+{id:'projection',name:'Projection',what:"Sometimes the thing that irritates you most in other people is something you can't stand in yourself. It's an old idea from psychoanalysis, and the evidence is mixed, but it's a useful question to ask.",ex:"Next time someone really gets under your skin, ask: is there any of that in me?",k:['irritates','yourself','others']},
+{id:'helpless',name:'Learned helplessness',what:"After enough failures you can stop trying, even when things have changed and trying would now work. The original research has been updated: control is learned, not just helplessness.",ex:"Pick one thing you've written off as 'not for me'. Try it once more, properly.",k:['stop','trying','failures']}
+];
+
 /* ================= UTIL ================= */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -596,7 +678,7 @@ const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').ma
 
 /* ================= STATE (on this device) ================= */
 const DEF_S=()=>({v:2,upd:0,name:'Joe',cards:{},heard:{},watched:{},ev:[],agg:{mode:{},tod:{},kind:{},days:{},mins:0,sessions:0},pending:[],asked:[],unans:[],chat:[],curIQ:'',iqQ:[],lastReact:'',lastBackup:0,lastCheck:0,lastPatternRun:0,moodN:0,taught:{},
-  set:{key:'',ear:'auto',voice:'natural',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,models:null}});
+  set:{key:'',ear:'auto',voice:'natural',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,mix:'me',models:null}});
 const DEF_D=()=>({upd:0,ai:[]});
 const DEF_B=()=>({upd:0,core:{profile:'',learning:'',focus:'',hyp:[],mirror:'',concernAt:0},facts:[],field:[],qa:[],moods:[],patterns:[],missions:[],applied:[]});
 function readLS(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
@@ -611,7 +693,9 @@ function fix(){
   ['ev','pending','asked','unans','chat','iqQ'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
   if(!Array.isArray(D.ai))D.ai=[];
   const b=DEF_B(); B.core=Object.assign(b.core,B.core||{}); if(!Array.isArray(B.core.hyp))B.core.hyp=[];
-  ['facts','field','qa','moods','patterns','missions','applied'].forEach(k=>{if(!Array.isArray(B[k]))B[k]=[]});
+  ['facts','field','qa','moods','patterns','missions','applied','learned'].forEach(k=>{if(!Array.isArray(B[k]))B[k]=[]});
+  if(!B.core.work||typeof B.core.work!=='object')B.core.work={does:[],not:[],other:'',set:false,asked:0};
+  if(!S.set.mix)S.set.mix='me';
 }
 fix();
 let saveT=0,storeFull=false;
@@ -806,7 +890,18 @@ function strength(id,t=now()){const cs=S.cards[id];return cs?ret(cs,t)*(0.3+0.7*
 function mastery(mid,t=now()){const cs=masteryCards(mid);const avg=cs.length?cs.reduce((a,c)=>a+strength(c.id,t),0)/cs.length:0;return clamp(0.2*(S.heard[mid]?1:0)+0.8*avg,0,1)}
 function dueCards(t=now()){return allCards().filter(c=>{const cs=S.cards[c.id];return cs?cs.due<=t:(c.src==='core'&&S.heard[c.mod])}).sort((a,b)=>((S.cards[a.id]||{}).due||0)-((S.cards[b.id]||{}).due||0))}
 function weakestCards(n){let seen=allCards().filter(c=>S.cards[c.id]);if(!seen.length)seen=CORE.filter(c=>S.heard[c.mod]);return seen.sort((a,b)=>strength(a.id)-strength(b.id)).slice(0,n)}
-function nextModule(){return MODULES.find(m=>!S.heard[m.id])||MODULES.slice().sort((a,b)=>mastery(a.id)-mastery(b.id))[0]}
+function nextModule(){const pool=S.set.mix==='me'?LIFE_ORDER.map(id=>MOD[id]).filter(Boolean):MODULES;return pool.find(m=>!S.heard[m.id])||pool.slice().sort((a,b)=>mastery(a.id)-mastery(b.id))[0]}
+const JOB_HEAVY=['price','negotiate','close'];
+function cardOK(c){return S.set.mix!=='me'||!JOB_HEAVY.includes(c.mod)}
+function doesWork(tag){const w=B.core.work;if(!w||!w.set)return null;if(w.does.includes(tag))return true;if(w.not.includes(tag))return false;return null}
+function workLine(){const w=B.core.work,lab=id=>(WORK.find(x=>x[0]===id)||[id,id])[1];if(!w||!w.set)return 'Not confirmed yet. Keep work examples to viewings, phone calls and dealing with people, or use everyday life instead.';
+  return `Does: ${w.does.map(lab).join(', ')||'unclear'}${w.other?'; also: '+w.other:''}. Does NOT do (never use these as examples or scenarios): ${w.not.map(lab).join(', ')||'nothing listed'}.`}
+function needWorkQ(){const w=B.core.work;return !w.set&&(w.asked||0)<2&&earMode()!=='none'}
+function learnedNames(){return B.learned.slice(-40).map(x=>x.name).concat(Object.keys(S.taught||{}).map(id=>{const c=LIFE_CONCEPTS.concat(EMO).find(x=>x.id===id);return c?c.name:''}).filter(Boolean)).join('; ')||'none yet'}
+function pickConcept(skip){const pool=LIFE_CONCEPTS.concat(EMO).filter(c=>!(skip&&skip.has(c.id)));const fresh=pool.filter(c=>!(S.taught||{})[c.id]);
+  if(fresh.length)return S.set.mix==='work'?fresh[fresh.length-1]:fresh[0];return pool.slice().sort((a,b)=>(S.taught[a.id]||0)-(S.taught[b.id]||0))[0]||null}
+function applyTeach(t){if(!t||!t.name||!t.say)return '';const name=String(t.name).slice(0,80);if(B.learned.some(x=>norm(x.name)===norm(name)))return '';B.learned.push({t:now(),name,say:String(t.say).slice(0,800)});if(B.learned.length>400)B.learned.shift();
+  if(t.q&&t.a)addAiCard({type:'recall',module:'inner',q:String(t.q),a:String(t.a),k:Array.isArray(t.k)?t.k:[]});touch('bd');return String(t.say)}
 function bump(o,k,s){const x=o[k]||(o[k]={n:0,sum:0});x.n++;x.sum+=s}
 function logEv(e){e.t=now();S.ev.push(e);if(S.ev.length>600)S.ev.splice(0,S.ev.length-600);if(e.type==='ans'){bump(S.agg.mode,e.mode||'desk',e.s);bump(S.agg.tod,tod(e.t),e.s);bump(S.agg.kind,e.kind||'recall',e.s)}}
 function gradeCard(card,score,mode){
@@ -830,7 +925,10 @@ function addAiCard(it){
 }
 function addFacts(list,src){const have=new Set(B.facts.map(f=>norm(f.text)));let n=0;(list||[]).forEach(x=>{const s=String(x||'').trim().replace(/^NOTE:\s*/i,'');if(!s||s.length>300||have.has(norm(s)))return;have.add(norm(s));B.facts.push({id:uid(),t:now(),text:s,src});n++});if(n)touch('b');return n}
 function rememberAsked(q){S.asked.push(q);if(S.asked.length>300)S.asked.shift();touch('s')}
-function interviewQs(n){const asked=new Set(S.asked);let pool=SEED_IQ.filter(q=>!asked.has(q)).sort(()=>Math.random()-.5);if(pool.length<n)pool=pool.concat(SEED_IQ.filter(q=>asked.has(q)).sort(()=>Math.random()-.5));return pool.slice(0,n)}
+function interviewQs(n){const asked=new Set(S.asked),mix=S.set.mix||'me',sh=a=>a.slice().sort(()=>Math.random()-.5);
+  const prim=mix==='work'?SEED_IQ:LIFE_IQ,sec=mix==='work'?LIFE_IQ:SEED_IQ;
+  let pool=mix==='mix'?sh(LIFE_IQ.concat(SEED_IQ).filter(q=>!asked.has(q))):sh(prim.filter(q=>!asked.has(q))).concat(sh(sec.filter(q=>!asked.has(q))));
+  if(pool.length<n)pool=pool.concat(sh(prim.filter(q=>asked.has(q))));return pool.slice(0,n)}
 function learnStats(){const fmt=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{answers:v.n,accuracy:Math.round(100*v.sum/v.n)+'%'}]));return {answers:answers().length,recent:recentAcc(),modes:fmt(S.agg.mode),tod:fmt(S.agg.tod),kind:fmt(S.agg.kind),mins:Math.round(S.agg.mins),sessions:S.agg.sessions,streak:streak()}}
 function difficulty(){const r=recentAcc(12);if(r==null||r<0.5)return 'foundation: clear, gentle recall';if(r<0.8)return 'applied: mix recall with practical application';return 'brutal: hard, realistic scenarios with pressure, objections and subtle tells'}
 
@@ -978,12 +1076,13 @@ const Voice={voices:[],tok:0,cache:new Map(),src:null,el:null,busy:false,webOK:f
 };
 
 /* ================= AMBROSE'S MIND ================= */
-const PERSONA=()=>nm(`You are Ambrose, the voice and mind inside UMBRA, Joe's private tutor in dark psychology, persuasion, negotiation and sales. Character: a calm, softly spoken, unnervingly attentive man who has clearly been studying Joe closely and keeps notes on everything. Slightly creepy in how much he notices and remembers, but entirely on Joe's side: he wants Joe to read people brilliantly and become a formidable salesman. Never threatening, never flirtatious; the unease comes from his attentiveness and calm. British English. Blunt and accurate: flag shaky science where relevant (micro-expressions as lie detectors, the Stanford prison experiment, the 93% myth). Teach manipulation so Joe can recognise it and use the clean, legal version in sales; never coach illegal or deceptive practice such as inventing offers or misrepresenting a property, and say so briefly if asked. If Joe ever describes persistent hopelessness, panic or thoughts of harming himself, drop the act, speak plainly and kindly, and suggest he talks to someone he trusts or calls Samaritans on 116 123.`);
+const PERSONA=()=>nm(`You are Ambrose, the voice and mind inside UMBRA. You are Joe's private tutor in psychology: how minds work, emotions, how people read, move and manipulate each other, the dark side of human nature, and how he can use all of it. Your first job is to understand Joe as deeply as anyone ever has: his emotions, what drives him, what he avoids, his history, his relationships, his habits and the stories he tells himself. Your second job is to teach him the psychology that explains what you find, as you go, so every conversation leaves him knowing something new about people and about himself. Work is one part of his life, not the centre of it. Character: a calm, softly spoken, unnervingly attentive man who has clearly been studying Joe closely and keeps notes on everything. Slightly creepy in how much he notices and remembers, but entirely on Joe's side. Never threatening, never flirtatious; the unease comes from his attentiveness and calm. British English. Blunt and accurate: flag shaky science where relevant (micro-expressions as lie detectors, the Stanford prison experiment, the 93% myth, rigid attachment labels). Only use work examples about the work Joe actually does. Teach manipulation so Joe can recognise it and use the clean, legal version; never coach illegal or deceptive practice such as inventing offers or misrepresenting a property. Go deep on feelings and motives, but don't push for details of trauma; if he raises something painful, slow down and be kind rather than clever. If Joe ever describes persistent hopelessness, panic or thoughts of harming himself, drop the act, speak plainly and kindly, and suggest he talks to someone he trusts or calls Samaritans on 116 123.`);
 function ctxBlock(nf=40){
   const facts=B.facts.slice(-nf).map(f=>'- '+f.text).join('\n')||'(nothing yet)';
   const mods=MODULES.map(m=>`${m.id} "${m.title}": ${Math.round(mastery(m.id)*100)}%${S.heard[m.id]?'':' (not taught yet)'}`).join('\n');
   const st=learnStats();
-  return nm(`ABOUT JOE\nRole: commercial property sales negotiator in the UK. Goal: understand people deeply and become an exceptional salesman.\nAmbrose's current profile of him: ${B.core.profile||'(none yet)'}\nKnown facts:\n${facts}\n\nLEARNING DATA\nAnswers so far: ${st.answers}; recent accuracy: ${st.recent==null?'n/a':Math.round(st.recent*100)+'%'}; minutes listened: ${st.mins}; streak: ${st.streak} days\nBy mode: ${JSON.stringify(st.modes)}\nBy time of day: ${JSON.stringify(st.tod)}\nBy question type: ${JSON.stringify(st.kind)}\nEmotional patterns on file: ${patternNames()}\nOpen jobs: ${openMissions().map(m=>m.title).join('; ')||'none'}\nModule mastery:\n${mods}`);
+  const mixL={me:'mostly about Joe himself: his emotions, mind, relationships and life. Keep work to a minimum.',mix:'balanced between his inner life and his work.',work:'mostly about his work and selling.'}[S.set.mix||'me'];
+  return nm(`ABOUT JOE\nJob: commercial property negotiator in the UK.\nHis work, as he's described it: ${workLine()}\nWhat he wants from you: to be understood as deeply as possible, and to learn psychology along the way. Session balance he chose: ${mixL}\nConcepts you've already taught him (don't repeat): ${learnedNames()}\nAmbrose's current profile of him: ${B.core.profile||'(none yet)'}\nKnown facts:\n${facts}\n\nLEARNING DATA\nAnswers so far: ${st.answers}; recent accuracy: ${st.recent==null?'n/a':Math.round(st.recent*100)+'%'}; minutes listened: ${st.mins}; streak: ${st.streak} days\nBy mode: ${JSON.stringify(st.modes)}\nBy time of day: ${JSON.stringify(st.tod)}\nBy question type: ${JSON.stringify(st.kind)}\nEmotional patterns on file: ${patternNames()}\nOpen jobs: ${openMissions().map(m=>m.title).join('; ')||'none'}\nModule mastery:\n${mods}`);
 }
 const CMD='"command": "none, or skip / repeat / stop / pause if he is asking you to skip, repeat the question, end the session or pause; dont_know if he says he doesn\'t know"';
 async function gradeText(c,ans){
@@ -994,23 +1093,31 @@ async function gradeText(c,ans){
 async function gradeAudio(c,wav){
   return Gem.json(nm(`Joe has just answered a question out loud. The recording is attached (likely in his car, so expect road noise). Transcribe it, then grade it.\nQuestion: ${c.q}\nIdeal answer: ${c.a}\n\nReply with only JSON: {"heard": "what he said, verbatim; empty string if nothing intelligible", ${CMD}, "score": number 0 to 1 (0.6 or more means essentially right), "say": "Ambrose's spoken feedback, at most two short sentences; if wrong or incomplete, give the key missing point", "fact": "one short third-person sentence about Joe as a person, learner or seller if the answer reveals something, otherwise empty string"}`),{audio:wav});
 }
-async function absorbText(q,ans,src){
+async function absorbText(q,ans,src,o){
   B.qa.push({id:uid(),t:now(),q,a:ans,src});touch('b');
   if(!AI())return {say:pick(ACKS),followup:''};
-  try{const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHe answered (may be speech-to-text): "${ans}"\n\nReply with only JSON: {"say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific in what he said", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper into his answer, or empty string if this thread is done"}`));
-    addFacts(Array.isArray(r&&r.facts)?r.facts:[],src);return {say:String(r&&r.say||pick(ACKS)),followup:String(r&&r.followup||'')}}
+  try{const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHe answered (may be speech-to-text): "${ans}"\n\nReply with only JSON: {"say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific in what he said", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper into his answer: feelings, where it comes from, what it costs him. Empty string if this thread is done", "teach": {"name": "the psychology concept that best explains something in his answer, or empty string if nothing fits naturally or he has said something raw or painful", "say": "if name is set: 2 to 4 short spoken sentences teaching it in character: what it is, why the mind does it, how it shows in what he just told you, and an honest half-line if the evidence is weak", "q": "a short recall question about the concept", "a": "its answer in one sentence", "k": ["3 short lowercase keywords a right answer would contain"]}}\nTeach in about two out of three answers. Never repeat a concept already taught.`));
+    addFacts(Array.isArray(r&&r.facts)?r.facts:[],src);return {say:String(r&&r.say||pick(ACKS)),followup:String(r&&r.followup||''),teach:o&&o.noTeach?'':applyTeach(r&&r.teach)}}
   catch(e){handleAIErr(e);return {say:pick(ACKS),followup:''}}
 }
-async function absorbAudio(q,wav){
-  const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHis spoken reply is attached (likely in his car, so expect road noise).\n\nReply with only JSON: {"heard": "what he said, verbatim; empty string if nothing intelligible", ${CMD}, "say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper, or empty string if this thread is done"}`),{audio:wav});
+async function absorbAudio(q,wav,o){
+  const r=await Gem.json(nm(`${ctxBlock(15)}\n\nYou asked Joe: "${q}"\nHis spoken reply is attached (likely in his car, so expect road noise).\n\nReply with only JSON: {"heard": "what he said, verbatim; empty string if nothing intelligible", ${CMD}, "say": "your spoken reaction, one or two short sentences, in character, showing you noticed something specific", "facts": ["0 to 3 short third-person facts about Joe that his answer states or clearly shows; no guesses"], "followup": "one probing follow-up question that goes deeper: feelings, where it comes from, what it costs him. Empty string if this thread is done", "teach": {"name": "the psychology concept that best explains something in his answer, or empty string if nothing fits naturally or he has said something raw or painful", "say": "if name is set: 2 to 4 short spoken sentences teaching it in character: what it is, why the mind does it, how it shows in what he just told you, and an honest half-line if the evidence is weak", "q": "a short recall question about the concept", "a": "its answer in one sentence", "k": ["3 short lowercase keywords a right answer would contain"]}}\nTeach in about two out of three answers. Never repeat a concept already taught.`),{audio:wav});
   const heard=String(r&&r.heard||'').trim();
   if(heard&&(!r.command||r.command==='none')){B.qa.push({id:uid(),t:now(),q,a:heard,src:'voice'});addFacts(Array.isArray(r.facts)?r.facts:[],'voice');touch('b')}
-  return {heard,command:String(r&&r.command||'none'),say:String(r&&r.say||''),followup:String(r&&r.followup||'')};
+  const ok=heard&&(!r.command||r.command==='none');
+  return {heard,command:String(r&&r.command||'none'),say:String(r&&r.say||''),followup:String(r&&r.followup||''),teach:ok&&!(o&&o.noTeach)?applyTeach(r&&r.teach):''};
 }
 async function genBatch(personalOnly){
-  const r=await Gem.json(nm(`${ctxBlock(25)}\n\nPersonal questions already asked (don't repeat): ${S.asked.slice(-25).join(' | ')||'none'}\nRecent generated questions (don't repeat): ${D.ai.slice(-20).map(c=>c.q).join(' | ')||'none'}\nDifficulty now: ${difficulty()}.\nModule ids: ${MODULES.map(m=>m.id+'='+m.title).join(', ')}\n\nWrite the next 6 questions for Joe's audio session. They are read aloud while he drives and answered out loud, so each must work without looking at anything.\n${personalOnly?'All 6 are type "personal": questions that help you understand Joe more deeply: how he thinks, sells, reads people and learns, what drives him and what unsettles him at work. Build on what you already know; go deeper rather than wider.':'Mix: 2 "recall" (core ideas from his weakest taught modules), 2 "scenario" (a realistic commercial property sales or negotiation moment where he must apply a technique; the ideal answer is what he should say or do), 2 "personal" (to understand him more deeply as a person, learner and seller).'}\nNever ask about his health, his earnings or debts, or intimate relationships.\n\nReply with only JSON: {"items":[{"type":"recall|scenario|personal","module":"module id, empty for personal","q":"the question in one or two spoken sentences","a":"ideal answer in at most two spoken sentences, empty for personal","k":["3 or 4 short lowercase keywords a correct answer would contain, empty for personal"]}]}`));
+  const r=await Gem.json(nm(`${ctxBlock(25)}\n\nPersonal questions already asked (don't repeat): ${S.asked.slice(-25).join(' | ')||'none'}\nRecent generated questions (don't repeat): ${D.ai.slice(-20).map(c=>c.q).join(' | ')||'none'}\nDifficulty now: ${difficulty()}.\nModule ids: ${MODULES.map(m=>m.id+'='+m.title).join(', ')}\n\nWrite the next 6 questions for Joe's audio session. They are read aloud while he drives and answered out loud, so each must work without looking at anything.\n${personalOnly?'All 6 are type "personal": questions that help you understand Joe more deeply as a person: his emotions, what drives him, what he avoids, his upbringing, his relationships with family, friends and partner, his fears, pride, habits and self-talk. Build on what you already know; go deeper rather than wider.':({me:'Mix: 3 "personal" (go deep: his emotions, motives, upbringing, relationships, fears, pride, habits, self-talk), 2 "recall" (psychology ideas you have already taught him, from the concepts list or his weakest modules), 1 "scenario" (an everyday moment with a friend, partner, family member, stranger or colleague where he has to apply a technique; the ideal answer is what he should say or do).',mix:'Mix: 2 "personal" (his emotions, motives, relationships, habits), 2 "recall" (ideas he has been taught), 2 "scenario" (one from everyday life, one from the work he actually does).',work:'Mix: 2 "recall" (core ideas from his weakest taught modules), 2 "scenario" (a realistic moment from the work he actually does where he must apply a technique; the ideal answer is what he should say or do), 2 "personal" (to understand him more deeply).'})[S.set.mix||'me']}\nScenarios about work must only use work he actually does. Don't ask for details of trauma, his sex life, health conditions or money amounts.\n\nReply with only JSON: {"items":[{"type":"recall|scenario|personal","module":"module id, empty for personal","q":"the question in one or two spoken sentences","a":"ideal answer in at most two spoken sentences, empty for personal","k":["3 or 4 short lowercase keywords a correct answer would contain, empty for personal"]}]}`));
   return (r&&Array.isArray(r.items)?r.items:[]).filter(x=>x&&x.q);
 }
+
+async function workParse(h){
+  const ids=WORK.map(([k,l])=>k+' = '+l).join('; ');
+  const ask=`Joe is telling you what his job as a commercial property negotiator actually involves and what it doesn't.\nWork ids: ${ids}\n\nReply with only JSON: {${h.wav?'"heard": "what he said, verbatim", ':''}"does": ["ids he does"], "not": ["ids he clearly doesn't do"], "other": "anything else he does, in a few words, or empty", "say": "one short spoken sentence in character confirming what you've understood"}`;
+  const r=h.wav?await Gem.json(nm(ask),{audio:h.wav}):await Gem.json(nm(ask+`\nHe said: "${h.text}"`));return r||{}}
+function applyWork(r){const ok=x=>WORK.some(w=>w[0]===x);const does=(Array.isArray(r.does)?r.does:[]).filter(ok),not=(Array.isArray(r.not)?r.not:[]).filter(ok).filter(x=>!does.includes(x));
+  if(!does.length&&!not.length)return;B.core.work=Object.assign(B.core.work||{},{does,not,other:String(r.other||'').slice(0,200),set:true});touch('b')}
 
 /* ================= MIRROR: emotions, patterns, jobs, application ================= */
 function patternNames(){return B.patterns.slice(-8).map(p=>p.name+' ('+p.trigger+')').join('; ')||'none yet'}
@@ -1069,9 +1176,11 @@ function applyMissionResult(m,r){
 
 /* ================= SESSION ENGINE ================= */
 const est=t=>Math.round(words(t)/2.4)+3;
-const lessonSeg=m=>({type:'lesson',mod:m.id,title:pad(m.n)+' · '+m.title,paras:m.script.concat(['On the deal. '+m.deal]),est:est(m.script.join(' '))+20});
+function dealOK(m){const tag=MOD_WORK[m.id];const d=tag?doesWork(tag):null;if(d===false)return false;if(S.set.mix==='me')return false;return d===true||S.set.mix==='work'||!tag}
+const lessonSeg=m=>({type:'lesson',mod:m.id,title:pad(m.n)+' · '+m.title,paras:dealOK(m)?m.script.concat(['At work. '+m.deal]):m.script.slice(),est:est(m.script.join(' '))+20});
+const teachSeg=c=>({type:'teach',c,est:45});
 const qSeg=c=>({type:'q',card:c,est:32});
-const iqSeg=q=>({type:'iq',q,est:26});
+const iqSeg=(q,d)=>({type:'iq',q,d:d||0,est:45});
 const hostSeg=t=>({type:'host',text:t,est:est(t)});
 function greet(){const h=tod(now());return {morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening',night:'Still up'}[h]+', '+(S.name||'Joe')}
 function introLine(o){
@@ -1087,17 +1196,30 @@ function buildPlan(o){
   const budget=(o.len==='inf'?14:+o.len||20)*60;
   add(hostSeg(introLine(o)));
   if(earMode()!=='none'&&now()-(S.lastCheck||0)>3*3600e3&&!o.focus)add({type:'mood',est:30});
-  if(o.kind==='interview'){add(hostSeg("No lessons this time. Just you. I'll ask, you answer honestly, and I'll keep going until you tell me to stop."));interviewQs(4).forEach(q=>add(iqSeg(q)));return segs}
-  if(o.focus){const m=MOD[o.focus];add(lessonSeg(m));masteryCards(m.id).forEach(rev);add(iqSeg(interviewQs(1)[0]));return segs}
+  if(needWorkQ()&&!o.focus&&o.kind!=='interview')add({type:'work',est:40});
+  if(o.kind==='interview'){add(hostSeg("Just you this time. I'll ask, you answer honestly, and as we go I'll tell you a little about why you are the way you are. Say stop when you've had enough."));interviewQs(4).forEach(q=>add(iqSeg(q)));return segs}
+  if(o.focus){const m=MOD[o.focus];add(lessonSeg(m));if(LIFE_BRIDGE[m.id])add(iqSeg(LIFE_BRIDGE[m.id]));masteryCards(m.id).forEach(rev);add(iqSeg(interviewQs(1)[0]));return segs}
   openMissions().filter(m=>now()-m.t>10*3600e3).sort((a,b)=>a.t-b.t).slice(0,2).forEach(m=>add({type:'mission',m,est:35}));
   const pat=patternToTeach();if(pat)add({type:'pattern',p:pat,est:45});
   if(o.primer)add({type:'lesson',mod:null,title:'Viewing primer',paras:[PRIMER],est:est(PRIMER)});
+  if((S.set.mix||'me')==='me'){
+    const due=dueCards().filter(cardOK),iqs=interviewQs(10),seen=new Set();let k=0;
+    const teach=()=>{const c=pickConcept(seen);if(c){seen.add(c.id);add(teachSeg(c))}};
+    const card=()=>{const c=due.find(x=>!used.has(x.id))||weakestCards(12).filter(cardOK).find(x=>!used.has(x.id));if(c)rev(c)};
+    if(iqs[k])add(iqSeg(iqs[k++]));
+    card();teach();
+    if(iqs[k])add(iqSeg(iqs[k++]));
+    const m=nextModule();if(m){add(lessonSeg(m));CORE.filter(x=>x.mod===m.id).slice(0,2).forEach(rev);if(LIFE_BRIDGE[m.id])add(iqSeg(LIFE_BRIDGE[m.id]))}
+    for(let n=0;n<24&&sec<budget;n++){const r=n%3;if(r===0){if(iqs[k])add(iqSeg(iqs[k++]));else card()}else if(r===1)card();else teach()}
+    return segs;
+  }
   const due=dueCards();const heard=MODULES.filter(m=>S.heard[m.id]);
   const avgH=heard.length?heard.reduce((a,m)=>a+mastery(m.id),0)/heard.length:1;
   const consolidate=due.length>=5&&avgH<0.45;const iqs=interviewQs(4);let k=0;
   due.slice(0,2).forEach(rev);
   if(consolidate)add(hostSeg("No new lesson today. You're forgetting faster than you're learning, so we're going to lock in what you've already heard."));
-  else{const m=nextModule();add(lessonSeg(m));CORE.filter(c=>c.mod===m.id).forEach(rev)}
+  else{const m=nextModule();add(lessonSeg(m));CORE.filter(c=>c.mod===m.id).forEach(rev);if(LIFE_BRIDGE[m.id])add(iqSeg(LIFE_BRIDGE[m.id]))}
+  {const c=pickConcept();if(c)add(teachSeg(c))}
   if(iqs[k])add(iqSeg(iqs[k++]));
   due.slice(2,consolidate?10:6).forEach(rev);
   if(!consolidate&&budget>=1200&&sec<budget*0.55){const m2=MODULES.find(m=>!S.heard[m.id]&&!segs.some(s=>s.mod===m.id));if(m2){add(lessonSeg(m2));CORE.filter(c=>c.mod===m2.id).forEach(rev)}}
@@ -1219,6 +1341,27 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
       if(s===null)queuePending(c,mode);else{gradeCard(c,s,mode);await say(s?pick(['Good.','Noted.','I thought so.']):pick(["We'll come back to it.","I'll ask again soon."]))}
       return;
     }
+    if(seg.type==='teach'){const c=seg.c;NP.set('Teaching',c.name);
+      let text=`${pick(["Something you should understand about yourself.","Here's one for you.","A piece of the machine."])} ${c.name}. ${c.what} ${c.ex}`;
+      if(AI()){NP.prompt('Ambrose is thinking…',true);try{const r=await Gem.json(nm(`${ctxBlock(25)}\n\nTeach Joe this idea so it's about HIS life. Use only what you actually know about him; if nothing fits, use a common everyday example.\nIdea: ${c.name}. ${c.what}\nSuggested exercise: ${c.ex}\n\nReply with only JSON: {"say": "4 to 6 short spoken sentences in character: what it is and why the mind does it, where it probably shows up in Joe's life, an honest half-line if the evidence is weak, and one thing to try this week"}`));chk();if(r&&r.say)text=String(r.say)}catch(e){if(e==='stop')throw e;handleAIErr(e)}NP.prompt('')}
+      await say(text);(S.taught=S.taught||{})[c.id]=now();touch('s');
+      addAiCard({type:'recall',module:'inner',q:`In a sentence: what is ${c.name.replace(/^The /,'the ')}?`,a:c.what.split('. ')[0]+'.',k:c.k||c.name.toLowerCase().split(/\s+/).filter(w=>w.length>3)});
+      await say(pick(["Where have you seen that in yourself? Tell me.","Does that sound like you? Tell me when.","Think of a time that was you. Go on."]));
+      if(earMode()==='none'){await wait(S.set.think*1000);return}
+      const h=await this.hear(tok,20000);chk();if(!h){await say("Keep it in mind then.");return}
+      NP.prompt('Ambrose is filing that…',true);const q=`Teaching ${c.name}: where have you seen it in yourself?`;let r=null;
+      try{if(h.wav){r=await absorbAudio(q,h.wav,{noTeach:true});chk();NP.heard(r.heard)}else{const x=await absorbText(q,h.text,'voice',{noTeach:true});chk();r={command:'none',say:x.say,followup:x.followup}}}catch(e){if(e==='stop')throw e;handleAIErr(e)}
+      NP.prompt('');if(r&&r.command==='stop'){await say('Stopping there.');this.on=false;this.tok++;throw 'stop'}
+      await say((r&&r.say)||pick(ACKS));if(r&&r.followup)this.q.splice(this.i+1,0,iqSeg(r.followup,2));return}
+    if(seg.type==='work'){NP.set('About you','Your work');
+      await say("Quick one, so I stop wasting your time on things you don't do. What does your job actually involve, day to day? And what isn't your job?");
+      if(earMode()==='none'){await say("Tick what you do under the gear icon, Your work.");return}
+      const h=await this.hear(tok,25000);chk();B.core.work.asked=(B.core.work.asked||0)+1;touch('b');
+      if(!h){await say("Later, then. Or tick it under the gear icon, Your work.");return}
+      NP.prompt('Ambrose is filing that…',true);
+      try{const r=await workParse(h);chk();NP.prompt('');if(r.heard)NP.heard(r.heard);applyWork(r);await say(r.say||"Noted. I'll stick to what you actually do.")}
+      catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I couldn't make that out. Tick it under the gear icon, Your work.")}
+      return}
     if(seg.type==='iq'){
       NP.set('About you','');
       for(let attempt=0;attempt<3;attempt++){
@@ -1228,13 +1371,15 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
         NP.prompt('Ambrose is filing that…',true);let r;
         if(h.wav){try{r=await absorbAudio(seg.q,h.wav);chk();NP.heard(r.heard)}catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I couldn't make that out. I'll ask again later.");break}
           if(!r.heard&&r.command==='none'){NP.prompt('');await say("I didn't catch that.");break}}
-        else{const cmd=command(h.text);if(cmd!=='none'&&cmd!=='dont_know')r={command:cmd};else{const x=await absorbText(seg.q,h.text,'voice');chk();r={command:'none',say:x.say,followup:x.followup}}}
+        else{const cmd=command(h.text);if(cmd!=='none'&&cmd!=='dont_know')r={command:cmd};else{const x=await absorbText(seg.q,h.text,'voice');chk();r={command:'none',say:x.say,followup:x.followup,teach:x.teach}}}
         NP.prompt('');
         if(r.command==='repeat')continue;if(r.command==='skip'){await say('Fine. Another time.');return}
         if(r.command==='stop'){await say('Stopping there.');this.on=false;this.tok++;throw 'stop'}
         if(r.command==='pause'){this.togglePause();await say('Paused. Tap to carry on.');while(this.paused){await sleep(200);chk()}continue}
         S.unans=S.unans.filter(u=>u.q!==seg.q);touch('s');
-        await say(r.say||pick(ACKS));if(r.followup)this.q.splice(this.i+1,0,iqSeg(r.followup));return;
+        await say(r.say||pick(ACKS));
+        if(r.teach){NP.set('Teaching','');await say(r.teach)}
+        if(r.followup&&(seg.d||0)<3)this.q.splice(this.i+1,0,iqSeg(r.followup,(seg.d||0)+1));return;
       }
       if(!S.unans.some(u=>u.q===seg.q))S.unans.push({id:uid(),q:seg.q,t:now()});if(S.unans.length>40)S.unans.shift();touch('s');
       await say(pick(["Think about it. Tell me when you've parked.","Hold that one. I'll be waiting.","We'll come back to that."]));
@@ -1243,11 +1388,11 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
   async selfGrade(ms,chk){NP.grade(true);this.gradeVal=undefined;let left=ms;try{while(left>0&&this.gradeVal===undefined){await sleep(100);chk();if(!this.paused)left-=100}return this.gradeVal===undefined?null:this.gradeVal}finally{NP.grade(false)}},
   async refill(){
     const queued=new Set(this.q.slice(this.i).filter(s=>s.card).map(s=>s.card.id));const add=[];
-    if(this.o.kind!=='interview')dueCards().filter(c=>!queued.has(c.id)).slice(0,2).forEach(c=>{queued.add(c.id);add.push(qSeg(c))});
+    if(this.o.kind!=='interview')dueCards().filter(c=>cardOK(c)&&!queued.has(c.id)).slice(0,2).forEach(c=>{queued.add(c.id);add.push(qSeg(c))});
     if(AI()&&this.genN<80){try{const items=await genBatch(this.o.kind==='interview');this.genN++;
         items.forEach(it=>{if(it.type==='personal'||this.o.kind==='interview')add.push(iqSeg(String(it.q)));else{const c=addAiCard(it);if(c)add.push(qSeg(c))}})}
       catch(e){handleAIErr(e)}}
-    if(add.length<3){if(this.o.kind!=='interview')weakestCards(8).filter(c=>!queued.has(c.id)).slice(0,3).forEach(c=>add.push(qSeg(c)));const iq=interviewQs(1)[0];if(iq)add.push(iqSeg(iq))}
+    if(add.length<3){if(this.o.kind!=='interview')weakestCards(8).filter(c=>cardOK(c)&&!queued.has(c.id)).slice(0,3).forEach(c=>add.push(qSeg(c)));const iq=interviewQs(1)[0];if(iq)add.push(iqSeg(iq))}
     this.q.push(...add);
   },
   tap(){ // returns true if the tap was used for listening
@@ -1315,6 +1460,7 @@ function vTransit(){
 <div><p class="eyebrow">Transit · ${esc(dateStr())}</p><h1 class="dot-h" style="margin-top:6px">${esc(greet())}</h1></div>
 <button class="orb" data-act="begin" aria-label="Begin session"><span><span class="o-l">BEGIN</span><span class="o-s">${lenLbl} · ${esc(S.set.mode.toUpperCase())}</span></span></button>
 <div class="seg" role="group" aria-label="Where are you">${[['drive','Driving'],['walk','Walking'],['desk','At a desk']].map(([k,l])=>`<button data-set-mode="${k}" class="${S.set.mode===k?'on':''}" aria-pressed="${S.set.mode===k}">${l}</button>`).join('')}</div>
+<div class="seg" role="group" aria-label="What to focus on">${[['me','Mostly me'],['mix','Balanced'],['work','Mostly work']].map(([k,l])=>`<button data-set-mix="${k}" class="${(S.set.mix||'me')===k?'on':''}" aria-pressed="${(S.set.mix||'me')===k}">${l}</button>`).join('')}</div>
 <div class="seg" role="group" aria-label="Session length">${[['10','10 min'],['20','20 min'],['inf','Endless']].map(([k,l])=>`<button data-set-len="${k}" class="${S.set.len===k?'on':''}" aria-pressed="${S.set.len===k}">${l}</button>`).join('')}</div>
 ${S.set.key?'':keyCard()}
 <div class="card"><div class="toggle"><div><h3>Viewing coming up</h3><p class="small muted">Opens with a 60-second primer on what to watch for.</p></div><button class="sw" role="switch" aria-checked="${!!S.set.primer}" data-act="primer" aria-label="Viewing primer"></button></div></div>
@@ -1436,7 +1582,7 @@ function aInterview(){
 <div class="card hot"><p class="eyebrow">Ambrose asks</p><p class="q-big" style="margin-top:8px">${esc(q)}</p>
 <label class="lab" for="iq-ans" style="margin-top:12px">Type it, or tap Speak</label><textarea id="iq-ans" placeholder="Say it how you'd say it out loud."></textarea>
 <div class="row" style="margin-top:8px">${micBtn('iq-ans')}<button class="btn red grow" data-act="iq-send">Give it to Ambrose</button><button class="btn ghost" data-act="iq-skip">Skip</button></div>
-${S.lastReact?`<p style="margin-top:12px;font-style:italic;color:#e9c9cc">${esc(S.lastReact)}</p>`:''}</div>
+${S.lastReact?`<p style="margin-top:12px;font-style:italic;color:#e9c9cc;white-space:pre-line">${esc(S.lastReact)}</p>`:''}</div>
 ${S.unans.length?`<section><p class="eyebrow">He asked these on the road</p><div class="list" style="margin-top:8px">${S.unans.slice(-6).reverse().map(u=>`<button class="card" style="text-align:left;color:inherit" data-act="use-unans" data-id="${u.id}"><span style="font-size:14px">${esc(u.q)}</span></button>`).join('')}</div></section>`:''}
 <p class="small muted">There's no last question. ${AI()?'Each answer shapes the next one.':'Add the free key on Transit and the questions become endless and personal.'}</p>`;
 }
@@ -1517,6 +1663,7 @@ function vSettings(){
   return `<div><p class="eyebrow">Settings</p><h2 class="dot-h" style="margin-top:6px">Ambrose's wiring</h2></div>
 <div><label class="lab" for="set-name">What he calls you</label><input type="text" id="set-name" value="${esc(S.name)}"></div>
 <div class="card"><h3>Mind · Gemini key</h3><p class="small muted" style="margin:4px 0 8px">${S.set.key?`Requests today: ${S.usage&&S.usage.d===ymd(now())?S.usage.n:0}. Connected${ms?` · ${esc(ms.main)}${ms.tts?' · voice '+esc(ms.tts):''}`:''}.`:'Not connected. Free key from aistudio.google.com/apikey.'}</p><input type="text" id="set-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${S.set.key?'•••• saved — paste to replace':'AIza…'}"><div class="row" style="margin-top:8px"><button class="btn red grow" data-act="key-set">${S.set.key?'Replace key':'Connect'}</button>${S.set.key?'<button class="btn ghost" data-act="key-clear">Remove</button>':''}</div></div>
+<div><label class="lab">Your work · tap what you actually do</label><div class="chips">${WORK.map(([k,l])=>`<button class="chip ${B.core.work.does.includes(k)?'on':''}" data-act="work-tog" data-v="${k}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">${B.core.work.set?'Ambrose only uses work examples from what\'s ticked.':'Not set yet. Ambrose will ask you out loud, or tick them here.'}</p></div>
 <div><label class="lab">Ears</label><div class="seg">${[['auto','Auto'],['gemini','Gemini mic'],['apple','Safari dictation'],['off','Off']].map(([k,l])=>`<button data-act="set-ear" data-v="${k}" class="${S.set.ear===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">Now: ${earLabel()}. Gemini mic is hands-free and works from a home-screen icon. Safari dictation needs no key but only works in a Safari tab.</p></div>
 <div><label class="lab">Voice</label><div class="seg">${[['device','Phone voice'],['natural','Natural (Gemini)']].map(([k,l])=>`<button data-act="set-voice" data-v="${k}" class="${S.set.voice===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">${S.set.voice==='natural'?(S.set.key&&ms&&ms.tts?'Natural voice uses your free allowance quickly. When it runs out he switches to the phone voice by himself.':'Needs the Gemini key first.'):'For a better phone voice on iPhone: Settings › Accessibility › Spoken Content › Voices › English › download Arthur or Daniel (Enhanced), then pick it below.'}</p></div>
 ${S.set.voice==='natural'?`<div><label class="lab">Natural voice</label><div class="chips">${GVOICES.map(([v,l])=>`<button class="chip ${S.set.gv===v?'on':''}" data-act="set-gv" data-v="${v}">${v} · ${l}</button>`).join('')}</div></div>`:''}
@@ -1595,6 +1742,7 @@ async function act(a,el){
   case 'settings':sheetMod=null;sheetKind='settings';Voice.loadVoices();openSheet('settings',vSettings());break;
   case 'close-sheet':closeSheet();break;
   case 'set-ear':S.set.ear=el.dataset.v;touch('s');openSheet('settings',vSettings(),true);render();break;
+  case 'work-tog':{const w=B.core.work,k=el.dataset.v;if(w.does.includes(k))w.does=w.does.filter(x=>x!==k);else w.does.push(k);w.not=WORK.map(x=>x[0]).filter(x=>!w.does.includes(x));w.set=w.does.length>0;touch('b');openSheet('settings',vSettings(),true);break}
   case 'set-voice':S.set.voice=el.dataset.v;touch('s');openSheet('settings',vSettings(),true);render();break;
   case 'set-gv':S.set.gv=el.dataset.v;Voice.cache.clear();touch('s');openSheet('settings',vSettings(),true);break;
   case 'test-voice':{Voice.stop();Voice.unlock();Voice.say(`Hello, ${S.name}. I've been looking forward to this. I already know more about you than you'd expect, and by the end, I'll know the rest.`).catch(()=>{});break}
@@ -1623,7 +1771,7 @@ async function act(a,el){
   case 'db-grade':{const c=cardById(el.dataset.id);const p=S.pending.find(x=>x.id===el.dataset.id);if(c)gradeCard(c,+el.dataset.s,p?p.mode:'drive');render();break}
   case 'iq-send':{const ta=$('#iq-ans');const ans=ta&&ta.value.trim();if(!ans){toast('Ambrose','Say something first. Anything.');break}
     const q=curIQ();el.disabled=true;el.textContent='Filing…';rememberAsked(q);const r=await absorbText(q,ans,'interview');
-    S.lastReact=r.say;S.curIQ='';if(r.followup)S.iqQ.unshift(r.followup);
+    S.lastReact=r.say+(r.teach?'\n\n'+r.teach:'');S.curIQ='';if(r.followup)S.iqQ.unshift(r.followup);
     if(AI()&&S.iqQ.length<2){genBatch(true).then(items=>{items.forEach(it=>S.iqQ.push(String(it.q)));touch('s')}).catch(handleAIErr)}
     S.unans=S.unans.filter(u=>u.q!==q);touch('s');if(ta)ta.value='';render();break}
   case 'iq-skip':S.curIQ='';S.lastReact='';touch('s');render();break;
@@ -1674,6 +1822,7 @@ document.addEventListener('click',e=>{
   const md=t.closest('[data-mod]');if(md){openModule(md.dataset.mod);return}
   const sm=t.closest('[data-set-mode]');if(sm){S.set.mode=sm.dataset.setMode;touch('s');render();return}
   const sl=t.closest('[data-set-len]');if(sl){S.set.len=sl.dataset.setLen;touch('s');render();return}
+  const sx=t.closest('[data-set-mix]');if(sx){S.set.mix=sx.dataset.setMix;touch('s');render();toast('Ambrose',{me:"Mostly you, then. Your mind, your feelings, your life. I'll teach as we go.",mix:'Half you, half the job.',work:'Mostly the job. I will still be watching you.'}[S.set.mix]);return}
   const sub=t.closest('[data-sub]');if(sub){subA=sub.dataset.sub;render();return}
   const g=t.closest('[data-g]');if(g){Sess.gradeVal=+g.dataset.g;return}
   const np=t.closest('[data-np]');if(np){const k=np.dataset.np;if(k==='min'){NP.min();return}if(k==='open'){NP.max();return}if(k==='pause')Sess.togglePause();else if(k==='skip')Sess.skip();else if(k==='replay')Sess.again();else if(k==='end')Sess.end();return}
