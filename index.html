@@ -578,7 +578,7 @@ const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').ma
 
 /* ================= STATE (on this device) ================= */
 const DEF_S=()=>({v:2,upd:0,name:'Joe',cards:{},heard:{},watched:{},ev:[],agg:{mode:{},tod:{},kind:{},days:{},mins:0,sessions:0},pending:[],asked:[],unans:[],chat:[],curIQ:'',iqQ:[],lastReact:'',lastBackup:0,lastCheck:0,lastPatternRun:0,moodN:0,taught:{},
-  set:{key:'',ear:'auto',voice:'device',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,models:null}});
+  set:{key:'',ear:'auto',voice:'natural',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,models:null}});
 const DEF_D=()=>({upd:0,ai:[]});
 const DEF_B=()=>({upd:0,core:{profile:'',learning:'',focus:'',hyp:[],mirror:'',concernAt:0},facts:[],field:[],qa:[],moods:[],patterns:[],missions:[],applied:[]});
 function readLS(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
@@ -587,6 +587,7 @@ let S=hydrate(DEF_S,readLS('umbra2.s')), D=hydrate(DEF_D,readLS('umbra2.d')), B=
 function fix(){
   const d=DEF_S();
   S.set=Object.assign(d.set,S.set||{}); S.agg=Object.assign(d.agg,S.agg||{});
+  if(!S.set.vmig){S.set.vmig=1;S.set.voice='natural'}
   ['mode','tod','kind','days'].forEach(k=>{if(!S.agg[k]||typeof S.agg[k]!=='object')S.agg[k]={}});
   ['cards','heard','watched','taught'].forEach(k=>{if(!S[k]||typeof S[k]!=='object'||Array.isArray(S[k]))S[k]={}});
   ['ev','pending','asked','unans','chat','iqQ'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
@@ -607,14 +608,18 @@ const G='https://generativelanguage.googleapis.com/v1beta';
 const Gem={cool:0,ttsOff:0,
   ready(){return !!S.set.key&&now()>this.cool},
   m(t){const ms=S.set.models||{};return ms[t]||(t==='quick'?'gemini-flash-lite-latest':'gemini-flash-latest')},
-  async req(path,body){
+  async req(path,body,ms){
     if(body){const d=ymd(now());if(!S.usage||S.usage.d!==d)S.usage={d,n:0};S.usage.n++;touch('s')}
-    const r=await fetch(G+path,{method:body?'POST':'GET',headers:Object.assign({'x-goog-api-key':S.set.key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
-    if(!r.ok){let msg='';try{msg=(await r.json()).error.message||''}catch(e){}
-      const low=String(msg).toLowerCase();
-      const code=/credit|prepay|billing|spend cap|spending cap|payment/.test(low)?'billing':r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
-      throw {code,message:msg,status:r.status}}
-    return r.json();
+    const ac=window.AbortController?new AbortController():null;const tm=ac?setTimeout(()=>{try{ac.abort()}catch(e){}},ms||(body?30000:15000)):0;
+    try{
+      const r=await fetch(G+path,{method:body?'POST':'GET',headers:Object.assign({'x-goog-api-key':S.set.key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined,signal:ac?ac.signal:undefined});
+      if(!r.ok){let msg='';try{msg=(await r.json()).error.message||''}catch(e){}
+        const low=String(msg).toLowerCase();
+        const code=/credit|prepay|billing|spend cap|spending cap|payment/.test(low)?'billing':r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
+        throw {code,message:msg,status:r.status}}
+      return await r.json();
+    }catch(e){if(e&&e.code)throw e;throw {code:ac&&ac.signal.aborted?'timeout':'network',message:String((e&&e.message)||e)}}
+    finally{clearTimeout(tm)}
   },
   async setup(){
     const j=await this.req('/models?pageSize=300');const names=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''));
@@ -659,8 +664,10 @@ const Gem={cool:0,ttsOff:0,
     const model=(S.set.models||{}).tts;if(!model)throw {code:'no_model'};
     const style='a quiet, slow, softly spoken British man: calm, precise, unnervingly attentive, faintly menacing in his calm but warm underneath';
     let j;
-    try{j=await this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text,speech_metadata:{style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:S.set.gv}}}})}
-    catch(e){if(e.code!=='bad_request')throw e;j=await this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text:`Read this aloud as ${style}: ${text}`}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:S.set.gv}}}}})}
+    const alt=()=>this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text:`Read this aloud as ${style}: ${text}`}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:S.set.gv}}}}},25000);
+    if(Gem.ttsAlt)j=await alt();
+    else{try{j=await this.req('/models/'+model+':generateContent',{contents:[{role:'user',parts:[{text,speech_metadata:{style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:S.set.gv}}}},25000)}
+      catch(e){if(e.code!=='bad_request')throw e;j=await alt();Gem.ttsAlt=true}}
     const parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
     const p=parts.find(x=>x.inlineData||x.inline_data);if(!p)throw {code:'upstream_error',message:'no audio'};
     const d=p.inlineData||p.inline_data;return {data:d.data,mime:d.mimeType||d.mime_type||''};
@@ -672,7 +679,7 @@ function handleAIErr(e){
   if(c==='billing'){Gem.cool=now()+5*60e3;status();toast('Gemini billing',"Google won't run requests until there's credit. AI Studio › Billing › add credit (e.g. $10). It said: "+String(e.message||'').slice(0,140))}
   else if(c==='bad_key'){toast('Ambrose',"Google rejected the key. Check it under the gear icon.")}
   else if(c==='rate_limited'){Gem.cool=now()+10*60e3;status();toast('Ambrose',"Gemini allowance or credit used up. I'll mark you myself and try again in ten minutes.")}
-  else if(c==='refused'){}
+  else if(c==='refused'||c==='timeout'||c==='network'){}
   else if(c&&c!=='invalid_json'){Gem.cool=now()+60e3;status()}
 }
 
@@ -866,47 +873,88 @@ const MALE=/(arthur|daniel|oliver|malcolm|fred|gordon|aaron|evan|nathan|\btom\b|
 const NOVELTY=/(compact|novelty|whisper|bells|bubbles|cellos|zarvox|trinoids|albert|bad news|good news|jester|organ|superstar|wobble|boing|deranged|hysterical|bahh|grandpa|grandma|rocko|shelley|sandy|flo\b|eddy)/i;
 function rankVoices(vs){return vs.filter(v=>/^en/i.test(v.lang)).map(v=>{const n=v.name;let s=0;if(/premium/i.test(n))s+=50;if(/enhanced|neural|natural|online/i.test(n))s+=35;if(/siri/i.test(n))s+=18;if(/en[-_]GB/i.test(v.lang))s+=22;if(MALE.test(n))s+=18;if(/google uk english male/i.test(n))s+=30;if(NOVELTY.test(n))s-=90;return {v,s}}).sort((a,b)=>b.s-a.s).map(x=>x.v)}
 function chunk(text){const parts=String(text).match(/[^.!?]+[.!?]+["'”’)]*\s*|[^.!?]+$/g)||[text];const out=[];let cur='';parts.forEach(p=>{if((cur+p).length>190&&cur){out.push(cur.trim());cur=p}else cur+=p});if(cur.trim())out.push(cur.trim());return out}
-const Voice={voices:[],tok:0,cache:new Map(),src:null,
+let SILENT_URL='';
+function silentURL(){if(!SILENT_URL){try{SILENT_URL=URL.createObjectURL(new Blob([wavFromPCM16(new Int16Array(8000),8000)],{type:'audio/wav'}))}catch(e){}}return SILENT_URL}
+const Voice={voices:[],tok:0,cache:new Map(),src:null,el:null,busy:false,webOK:false,webFails:0,webDead:false,cur:null,
   hasWeb:()=>'speechSynthesis' in window,
-  engine(){return S.set.voice==='natural'&&AI()&&(S.set.models||{}).tts&&now()>Gem.ttsOff?'gemini':'web'},
+  engine(){const g=AI()&&(S.set.models||{}).tts&&now()>Gem.ttsOff;return g&&(S.set.voice==='natural'||this.webDead)?'gemini':'web'},
   loadVoices(){if(!this.hasWeb())return;try{const v=speechSynthesis.getVoices();if(v&&v.length)this.voices=rankVoices(v)}catch(e){}},
   pick(){return this.voices.find(v=>v.voiceURI===S.set.dv)||this.voices[0]||null},
-  unlock(){Aud.unlock();if(!this.hasWeb())return;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},
+  media(){if(!this.el){const a=new Audio();a.setAttribute('playsinline','');a.setAttribute('webkit-playsinline','');a.preload='auto';this.el=a}return this.el},
+  // Must run inside a tap. Unlocks the speaker element, Web Audio and the phone voice.
+  unlock(){Aud.unlock();session('playback');
+    const a=this.media();try{if(!this.busy){a.loop=false;a.src=silentURL();a.volume=1;const p=a.play();p&&p.catch(()=>{})}}catch(e){}
+    if(!this.hasWeb())return;try{speechSynthesis.cancel();if(speechSynthesis.paused)speechSynthesis.resume();const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},
+  // Quiet loop while a session runs: keeps iPhone audio in "playback" (speaker, ignores silent switch) and the app alive when locked.
+  keep(on){const a=this.media();try{if(on){if(this.busy)return;a.loop=true;if(a.src!==silentURL())a.src=silentURL();const p=a.play();p&&p.catch(()=>{})}else if(!this.busy){a.pause();a.loop=false}}catch(e){}},
   prefetch(text){if(this.engine()!=='gemini'||!text)return;text=nm(text);if(this.cache.has(text))return;const p=Gem.speak(text).catch(e=>{this.cache.delete(text);throw e});p.catch(()=>{});this.cache.set(text,p);if(this.cache.size>8)this.cache.delete(this.cache.keys().next().value)},
   async say(text,next){
     text=nm(text);const tok=this.tok;NP.cap(text);
     if(this.engine()==='gemini'){
+      let a=null;
       try{let p=this.cache.get(text);if(!p){p=Gem.speak(text);this.cache.set(text,p)}if(next)this.prefetch(next);
-        const a=await p;this.cache.delete(text);if(tok!==this.tok)throw 'stop';await this.playAudio(a,tok);if(tok!==this.tok)throw 'stop';return}
-      catch(e){if(e==='stop'||tok!==this.tok)throw 'stop';Gem.ttsOff=now()+(e&&e.code==='rate_limited'?6*3600e3:600e3);toast('Voice',"Natural voice unavailable right now. Using the phone's voice.")}
+        a=await p;this.cache.delete(text);if(tok!==this.tok)throw 'stop'}
+      catch(e){if(e==='stop'||tok!==this.tok)throw 'stop';this.cache.delete(text);const c=e&&e.code;Gem.ttsOff=now()+(c==='rate_limited'?6*3600e3:c==='billing'?3600e3:c==='timeout'||c==='network'?120e3:600e3);toast('Voice',c==='billing'?"Natural voice needs Gemini credit. Using the phone's voice.":"Natural voice unavailable right now. Using the phone's voice.");a=null}
+      if(a){
+        try{await this.playMedia(a,tok);if(tok!==this.tok)throw 'stop';return}
+        catch(e){if(e==='stop'||tok!==this.tok)throw 'stop'}
+        try{await this.playCtx(a,tok);if(tok!==this.tok)throw 'stop';return}
+        catch(e){if(e==='stop'||tok!==this.tok)throw 'stop'}
+      }
     }
     return this.sayWeb(text,tok);
   },
-  async playAudio(a,tok){
+  toWav(a){let bytes=b64ToBytes(a.data);const isWav=bytes[0]===82&&bytes[1]===73&&bytes[2]===70&&bytes[3]===70;
+    if(!isWav){const rate=+((String(a.mime).match(/rate=(\d+)/)||[])[1]||24000);const pcm=new Int16Array(bytes.buffer,bytes.byteOffset,Math.floor(bytes.length/2));bytes=wavFromPCM16(pcm,rate)}return bytes},
+  // Speaker via a media element: loud, ignores the silent switch, works with the screen locked.
+  async playMedia(a,tok){
+    const url=URL.createObjectURL(new Blob([this.toWav(a)],{type:'audio/wav'}));const el=this.media();this.busy=true;
+    try{
+      await new Promise((res,rej)=>{let iv=0,ok=false;
+        const off=()=>{clearInterval(iv);el.onended=null;el.onerror=null;Field.energy=0};
+        el.onended=()=>{off();res()};el.onerror=()=>{off();rej({code:'play_failed'})};
+        el.loop=false;el.src=url;el.volume=1;
+        const p=el.play();if(p&&p.then)p.then(()=>{ok=true}).catch(e=>{off();rej({code:'play_failed',message:String((e&&e.message)||e)})});else ok=true;
+        Field.energy=0.8;let el0=0;
+        iv=setInterval(()=>{if(tok!==this.tok){try{el.pause()}catch(e){}off();res();return}
+          if(!el.paused){el0=0;Field.level(0.2+Math.random()*0.5);if(Math.random()<0.25)Field.kick()}
+          else if(!Sess.paused&&!ok){el0+=90;if(el0>4000){off();rej({code:'play_failed',message:'never started'})}}},90);
+      });
+    }finally{this.busy=false;setTimeout(()=>URL.revokeObjectURL(url),1000);if(Sess.on)this.keep(true)}
+  },
+  async playCtx(a,tok){
     const ctx=Aud.get();try{await ctx.resume()}catch(e){}
-    let bytes=b64ToBytes(a.data);const isWav=bytes[0]===82&&bytes[1]===73&&bytes[2]===70&&bytes[3]===70;
-    if(!isWav){const rate=+((a.mime.match(/rate=(\d+)/)||[])[1]||24000);const pcm=new Int16Array(bytes.buffer,bytes.byteOffset,Math.floor(bytes.length/2));bytes=wavFromPCM16(pcm,rate)}
+    const bytes=this.toWav(a);
     const buf=await new Promise((res,rej)=>ctx.decodeAudioData(bytes.buffer.slice(0),res,rej));
     return new Promise(res=>{const s=ctx.createBufferSource();s.buffer=buf;const an=ctx.createAnalyser();an.fftSize=512;s.connect(an);an.connect(ctx.destination);this.src=s;Field.energy=0.8;
       const arr=new Float32Array(an.fftSize);const iv=setInterval(()=>{an.getFloatTimeDomainData(arr);let q=0;for(let i=0;i<arr.length;i++)q+=arr[i]*arr[i];const r=Math.sqrt(q/arr.length);Field.level(r*4);if(r>0.12)Field.kick();if(tok!==this.tok){try{s.stop()}catch(e){}}},70);
       s.onended=()=>{clearInterval(iv);Field.energy=0;this.src=null;res()};s.start(0)});
   },
+  // Text on screen for reading time, used if the phone voice won't start, so the session never freezes.
+  async silentRead(text,tok){NP.cap(text);let left=Math.min(14000,1200+words(text)*280);while(left>0){await sleep(100);if(tok!==this.tok)throw 'stop';if(!Sess.paused)left-=100}},
+  warned:0,
+  warnMute(){if(now()-this.warned<120e3)return;this.warned=now();toast('Voice',"The phone voice won't start. Turn Silent mode off, turn the volume up, then tap the gear › Hear Ambrose.")},
   sayWeb(text,tok){
-    if(!this.hasWeb())return sleep(Math.min(12000,380*words(text))).then(()=>{if(tok!==this.tok)throw 'stop'});
+    if(!this.hasWeb()||this.webDead)return this.silentRead(text,tok);
     const parts=chunk(text);
     return new Promise((res,rej)=>{let i=0;const v=this.pick();
       const next=()=>{if(tok!==this.tok){Field.energy=0;return rej('stop')}if(i>=parts.length){Field.energy=0;return res()}
-        const txt=parts[i++];const u=new SpeechSynthesisUtterance(txt);if(v){u.voice=v;u.lang=v.lang}else u.lang='en-GB';u.rate=S.set.rate;u.pitch=S.set.pitch;let done=false;
-        const fin=()=>{if(done)return;done=true;setTimeout(next,140)};
-        u.onstart=()=>{Field.energy=1;NP.cap(txt)};u.onboundary=()=>Field.kick();u.onend=fin;
-        u.onerror=ev=>{if(ev&&(ev.error==='interrupted'||ev.error==='canceled')){done=true;Field.energy=0;return rej('stop')}fin()};
-        try{speechSynthesis.speak(u)}catch(e){fin()}
-        setTimeout(()=>{if(!done&&!speechSynthesis.speaking&&!speechSynthesis.pending&&!Sess.paused)fin()},Math.max(4000,txt.length*140));
+        const txt=parts[i++];const u=new SpeechSynthesisUtterance(txt);this.cur=u;if(v){u.voice=v;u.lang=v.lang}else u.lang='en-GB';u.rate=S.set.rate;u.pitch=S.set.pitch;u.volume=1;
+        let done=false,started=false,el=0;const cap=Math.max(7000,txt.length*95/Math.max(0.5,S.set.rate||1)+4000);
+        const fin=()=>{if(done)return;done=true;clearInterval(iv);setTimeout(next,140)};
+        u.onstart=()=>{started=true;this.webOK=true;this.webFails=0;Field.energy=1;NP.cap(txt)};u.onboundary=()=>Field.kick();u.onend=fin;
+        u.onerror=ev=>{if(done)return;if(tok!==this.tok){done=true;clearInterval(iv);Field.energy=0;return rej('stop')}fin()};
+        const iv=setInterval(()=>{if(done){clearInterval(iv);return}if(tok!==this.tok){done=true;clearInterval(iv);Field.energy=0;return rej('stop')}if(Sess.paused)return;el+=250;
+          if(!started&&el>=3500){done=true;clearInterval(iv);this.webFails++;try{speechSynthesis.cancel()}catch(e){}
+            if(this.webFails>=2&&!this.webOK)this.webDead=true;this.warnMute();
+            this.silentRead([txt].concat(parts.slice(i)).join(' '),tok).then(res,rej);return}
+          if(el>=cap)fin()},250);
+        try{if(speechSynthesis.paused)speechSynthesis.resume();speechSynthesis.speak(u)}catch(e){fin()}
       };next()});
   },
-  stop(){this.tok++;try{if(this.hasWeb())speechSynthesis.cancel()}catch(e){}try{this.src&&this.src.stop()}catch(e){}Field.energy=0},
-  pause(){try{if(this.hasWeb())speechSynthesis.pause();const c=Aud.ctx;if(c&&this.src)c.suspend()}catch(e){}},
-  resume(){try{if(this.hasWeb())speechSynthesis.resume();const c=Aud.ctx;if(c)c.resume()}catch(e){}}
+  stop(){this.tok++;try{if(this.hasWeb())speechSynthesis.cancel()}catch(e){}try{this.src&&this.src.stop()}catch(e){}try{if(this.busy&&this.el)this.el.pause()}catch(e){}Field.energy=0},
+  pause(){try{if(this.hasWeb())speechSynthesis.pause();if(this.busy&&this.el)this.el.pause();const c=Aud.ctx;if(c&&this.src)c.suspend()}catch(e){}},
+  resume(){try{if(this.hasWeb())speechSynthesis.resume();if(this.busy&&this.el){const p=this.el.play();p&&p.catch(()=>{})}const c=Aud.ctx;if(c)c.resume()}catch(e){}}
 };
 
 /* ================= AMBROSE'S MIND ================= */
@@ -1042,9 +1090,9 @@ function wake(on){try{if(on&&navigator.wakeLock)navigator.wakeLock.request('scre
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Sess.on)wake(true)});
 const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:null,genN:0,awaitTap:null,gradeVal:undefined,started:0,ev0:0,listening:false,
   start(o){
-    if(this.on)return;Voice.unlock();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+    if(this.on)return;Voice.unlock();Voice.keep(true);try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
     this.o=o;this.on=true;this.i=0;this.tok++;this.paused=false;this.replay=false;this.genN=0;this.started=now();this.ev0=answers().length;
-    this.q=buildPlan(o);NP.open(o.mode);wake(true);if(earMode()==='none')toast('Ears off',S.set.key?(Rec.denied?'Mic blocked: Settings › Apps › Safari › Microphone › Allow, then reload.':'Gemini key missing or paused. Check the gear icon.'):'Add the Gemini key on Transit so Ambrose can hear you.');const d=$('[data-go=transit]',$('#dock'));if(d){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce')}
+    this.q=buildPlan(o);NP.open(o.mode);wake(true);if(earMode()!=='none'&&(S.soundTips||0)<4){S.soundTips=(S.soundTips||0)+1;touch('s');toast('Sound','Can\'t hear him? Silent mode off and volume up.')}if(earMode()==='none')toast('Ears off',S.set.key?(Rec.denied?'Mic blocked: Settings › Apps › Safari › Microphone › Allow, then reload.':'Gemini key missing or paused. Check the gear icon.'):'Add the Gemini key on Transit so Ambrose can hear you.');const d=$('[data-go=transit]',$('#dock'));if(d){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce')}
     this.run();
   },
   async run(){
@@ -1187,7 +1235,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
   togglePause(){this.paused=!this.paused;if(this.paused)Voice.pause();else Voice.resume();NP.paused(this.paused)},
   finish(){
     const mins=(now()-this.started)/60000;S.agg.mins+=mins;const d=ymd(now());S.agg.days[d]=(S.agg.days[d]||0)+mins;S.agg.sessions++;touch('s');
-    this.on=false;this.awaitTap=null;NP.close();wake(false);render();
+    this.on=false;this.awaitTap=null;NP.close();wake(false);Voice.keep(false);render();
     if(S.pending.length)toast('Ambrose',`${S.pending.length} answer${S.pending.length>1?'s are':' is'} waiting for your verdict in Debrief.`);
   }
 };
