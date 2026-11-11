@@ -573,6 +573,7 @@ const Gem={cool:0,ttsOff:0,
   ready(){return !!S.set.key&&now()>this.cool},
   m(t){const ms=S.set.models||{};return ms[t]||(t==='quick'?'gemini-flash-lite-latest':'gemini-flash-latest')},
   async req(path,body){
+    if(body){const d=ymd(now());if(!S.usage||S.usage.d!==d)S.usage={d,n:0};S.usage.n++;touch('s')}
     const r=await fetch(G+path,{method:body?'POST':'GET',headers:Object.assign({'x-goog-api-key':S.set.key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
     if(!r.ok){let msg='';try{msg=(await r.json()).error.message||''}catch(e){}
       const code=r.status===429?'rate_limited':(r.status===400&&/api key/i.test(msg))||r.status===401||r.status===403?'bad_key':r.status===400?'bad_request':r.status===404?'no_model':'upstream_error';
@@ -597,12 +598,14 @@ const Gem={cool:0,ttsOff:0,
     const parts=[{text:prompt}];if(o.audio)parts.push({inline_data:{mime_type:'audio/wav',data:o.audio}});
     const body={systemInstruction:{parts:[{text:PERSONA()}]},contents:[{role:'user',parts}],generationConfig:{responseMimeType:'application/json',temperature:o.temp||0.8}};
     try{return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}
-    catch(e){if(e&&e.code==='no_model'&&S.set.models){S.set.models=null;await this.setup().catch(()=>{});return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}throw e}
+    catch(e){if(e&&e.code==='rate_limited'&&(o.tier||'quick')!=='quick')return this.json(prompt,Object.assign({},o,{tier:'quick'}));if(e&&e.code==='no_model'&&S.set.models){S.set.models=null;await this.setup().catch(()=>{});return this.parse(this.text(await this.req('/models/'+this.m(o.tier||'quick')+':generateContent',body)))}throw e}
   },
   async chat(system,turns,tier='main'){
     const contents=[];turns.forEach(t=>{const role=t.role==='assistant'?'model':'user';const last=contents[contents.length-1];if(last&&last.role===role)last.parts[0].text+='\n'+t.content;else contents.push({role,parts:[{text:t.content}]})});
     if(contents[0]&&contents[0].role==='model')contents.shift();
-    return this.text(await this.req('/models/'+this.m(tier)+':generateContent',{systemInstruction:{parts:[{text:system}]},contents,generationConfig:{temperature:0.9}}));
+    const body={systemInstruction:{parts:[{text:system}]},contents,generationConfig:{temperature:0.9}};
+    try{return this.text(await this.req('/models/'+this.m(tier)+':generateContent',body))}
+    catch(e){if(e&&e.code==='rate_limited'&&tier!=='quick')return this.text(await this.req('/models/'+this.m('quick')+':generateContent',body));throw e}
   },
   async speak(text){
     const model=(S.set.models||{}).tts;if(!model)throw {code:'no_model'};
@@ -1222,7 +1225,7 @@ function vSettings(){
   const vs=Voice.voices.slice(0,30),ms=S.set.models;
   return `<div><p class="eyebrow">Settings</p><h2 class="dot-h" style="margin-top:6px">Ambrose's wiring</h2></div>
 <div><label class="lab" for="set-name">What he calls you</label><input type="text" id="set-name" value="${esc(S.name)}"></div>
-<div class="card"><h3>Mind · Gemini key</h3><p class="small muted" style="margin:4px 0 8px">${S.set.key?`Connected${ms?` · ${esc(ms.main)}${ms.tts?' · voice '+esc(ms.tts):''}`:''}.`:'Not connected. Free key from aistudio.google.com/apikey.'}</p><input type="text" id="set-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${S.set.key?'•••• saved — paste to replace':'AIza…'}"><div class="row" style="margin-top:8px"><button class="btn red grow" data-act="key-set">${S.set.key?'Replace key':'Connect'}</button>${S.set.key?'<button class="btn ghost" data-act="key-clear">Remove</button>':''}</div></div>
+<div class="card"><h3>Mind · Gemini key</h3><p class="small muted" style="margin:4px 0 8px">${S.set.key?`Requests today: ${S.usage&&S.usage.d===ymd(now())?S.usage.n:0}. Connected${ms?` · ${esc(ms.main)}${ms.tts?' · voice '+esc(ms.tts):''}`:''}.`:'Not connected. Free key from aistudio.google.com/apikey.'}</p><input type="text" id="set-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${S.set.key?'•••• saved — paste to replace':'AIza…'}"><div class="row" style="margin-top:8px"><button class="btn red grow" data-act="key-set">${S.set.key?'Replace key':'Connect'}</button>${S.set.key?'<button class="btn ghost" data-act="key-clear">Remove</button>':''}</div></div>
 <div><label class="lab">Ears</label><div class="seg">${[['auto','Auto'],['gemini','Gemini mic'],['apple','Safari dictation'],['off','Off']].map(([k,l])=>`<button data-act="set-ear" data-v="${k}" class="${S.set.ear===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">Now: ${earLabel()}. Gemini mic is hands-free and works from a home-screen icon. Safari dictation needs no key but only works in a Safari tab.</p></div>
 <div><label class="lab">Voice</label><div class="seg">${[['device','Phone voice'],['natural','Natural (Gemini)']].map(([k,l])=>`<button data-act="set-voice" data-v="${k}" class="${S.set.voice===k?'on':''}">${l}</button>`).join('')}</div><p class="small muted" style="margin-top:6px">${S.set.voice==='natural'?(S.set.key&&ms&&ms.tts?'Natural voice uses your free allowance quickly. When it runs out he switches to the phone voice by himself.':'Needs the Gemini key first.'):'For a better phone voice on iPhone: Settings › Accessibility › Spoken Content › Voices › English › download Arthur or Daniel (Enhanced), then pick it below.'}</p></div>
 ${S.set.voice==='natural'?`<div><label class="lab">Natural voice</label><div class="chips">${GVOICES.map(([v,l])=>`<button class="chip ${S.set.gv===v?'on':''}" data-act="set-gv" data-v="${v}">${v} · ${l}</button>`).join('')}</div></div>`:''}
