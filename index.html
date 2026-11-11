@@ -216,7 +216,19 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
 .np-grade button{height:78px;border-radius:18px;font:700 18px var(--f-body);border:1px solid var(--line-2);background:rgba(255,255,255,.05)}
 .np-grade button[data-g="1"]{background:linear-gradient(180deg,#a61a27,#650b14);border-color:#c42330}
 .np-ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.np-ctl button{height:66px;border-radius:18px;border:1px solid var(--line-2);background:rgba(20,8,10,.6);display:grid;place-items:center}
+.np-ctl button{height:74px;border-radius:18px;border:1px solid var(--line-2);background:rgba(20,8,10,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.np-ctl button span{font:600 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--bone);opacity:.8}
+.np-ctl button.end{border-color:#c42330;background:rgba(122,14,24,.28)}
+.np-min{display:flex;align-items:center;gap:4px;height:34px;padding:0 12px 0 8px;border-radius:17px;border:1px solid var(--line-2);background:rgba(20,8,10,.6);font:600 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--bone)}
+.np-min svg{width:18px;height:18px;fill:none;stroke:var(--bone);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.np-mini{position:fixed;left:12px;right:12px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:7;display:flex;gap:8px;padding:8px;border-radius:20px;border:1px solid #c42330;background:rgba(40,8,13,.82);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.np-mini[hidden]{display:none}
+.mini-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:0 8px;background:none;border:0;text-align:left;color:var(--bone)}
+.mini-t{display:flex;flex-direction:column;min-width:0}.mini-t b{font-size:14px}.mini-t small{font-size:11px;color:var(--ash)}
+.mini-dot{width:10px;height:10px;border-radius:50%;background:#ff4654;box-shadow:0 0 12px #ff4654;animation:pulse-t 1.1s ease-in-out infinite;flex:none}
+.mini-btn{width:48px;height:48px;border-radius:14px;border:1px solid var(--line-2);background:rgba(20,8,10,.6);display:grid;place-items:center}
+.mini-btn.end{border-color:#c42330}
+.mini-btn svg{width:22px;height:22px;fill:none;stroke:var(--bone);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .np-ctl button.main{background:linear-gradient(180deg,#a61a27,#650b14);border-color:#c42330}
 .np-ctl svg{width:26px;height:26px;fill:none;stroke:var(--bone);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .np-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
@@ -270,7 +282,7 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
 </nav>
 
 <div id="np" class="np" hidden role="dialog" aria-label="Now playing">
-  <div class="np-top"><span class="pill red" id="np-kind">Lesson</span><span class="np-title" id="np-title"></span><span class="np-time" id="np-time">00:00</span></div>
+  <div class="np-top"><button class="np-min" data-np="min" aria-label="Hide player"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span>Hide</span></button><span class="pill red" id="np-kind">Lesson</span><span class="np-title" id="np-title"></span><span class="np-time" id="np-time">00:00</span></div>
   <div class="np-prog"><i id="np-bar"></i></div>
   <div class="np-tap" id="np-tap" tabindex="0">
     <p class="np-cap" id="np-cap"></p>
@@ -280,11 +292,17 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
   </div>
   <div class="np-grade" id="np-grade" hidden><button data-g="0">Missed it</button><button data-g="1">Got it</button></div>
   <div class="np-ctl">
-    <button data-np="replay" aria-label="Repeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
-    <button data-np="pause" class="main" aria-label="Pause"><svg viewBox="0 0 24 24" id="np-pp"><path d="M8 5v14M16 5v14"/></svg></button>
-    <button data-np="skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M19 5v14"/></svg></button>
-    <button data-np="end" aria-label="End session"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></button>
+    <button data-np="replay" aria-label="Repeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Repeat</span></button>
+    <button data-np="pause" class="main" aria-label="Pause"><svg viewBox="0 0 24 24" id="np-pp"><path d="M8 5v14M16 5v14"/></svg><span id="np-ppl">Pause</span></button>
+    <button data-np="skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M19 5v14"/></svg><span>Skip</span></button>
+    <button data-np="end" class="end" aria-label="End session"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg><span>End</span></button>
   </div>
+</div>
+
+<div id="np-mini" class="np-mini" hidden>
+  <button class="mini-open" data-np="open" aria-label="Back to Ambrose"><i class="mini-dot"></i><span class="mini-t"><b id="np-mini-k">Ambrose</b><small id="np-mini-s">Tap to go back</small></span></button>
+  <button class="mini-btn" data-np="pause" aria-label="Pause"><svg viewBox="0 0 24 24" id="np-mpp"><path d="M8 5v14M16 5v14"/></svg></button>
+  <button class="mini-btn end" data-np="end" aria-label="End session"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></button>
 </div>
 
 <div id="sheet" class="sheet-wrap" hidden>
@@ -918,7 +936,9 @@ const Voice={voices:[],tok:0,cache:new Map(),src:null,el:null,busy:false,webOK:f
         Field.energy=0.8;let el0=0;
         iv=setInterval(()=>{if(tok!==this.tok){try{el.pause()}catch(e){}off();res();return}
           if(!el.paused){el0=0;Field.level(0.2+Math.random()*0.5);if(Math.random()<0.25)Field.kick()}
-          else if(!Sess.paused&&!ok){el0+=90;if(el0>4000){off();rej({code:'play_failed',message:'never started'})}}},90);
+          else if(!Sess.paused){el0+=90;
+            if(ok){if(el0%990<90){const q=el.play();q&&q.catch(()=>{})}if(el0>6000){off();res()}}
+            else if(el0>4000){off();rej({code:'play_failed',message:'never started'})}}},90);
       });
     }finally{this.busy=false;setTimeout(()=>URL.revokeObjectURL(url),1000);if(Sess.on)this.keep(true)}
   },
@@ -1088,6 +1108,11 @@ function buildPlan(o){
 let wakeLock=null;
 function wake(on){try{if(on&&navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{wakeLock=l}).catch(()=>{});else if(!on&&wakeLock){wakeLock.release().catch(()=>{});wakeLock=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Sess.on)wake(true)});
+document.addEventListener('visibilitychange',()=>{
+  if(!Sess.on)return;
+  if(document.hidden){if(!Sess.paused){Sess.autoPaused=true;Sess.togglePause();Sess.again()}}
+  else if(Sess.autoPaused){Sess.autoPaused=false;setTimeout(()=>{if(!Sess.on||document.hidden)return;if(Sess.paused)Sess.togglePause();toast('Ambrose',"You're back. Picking up where we were.")},800)}
+});
 const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:null,genN:0,awaitTap:null,gradeVal:undefined,started:0,ev0:0,listening:false,
   start(o){
     if(this.on)return;Voice.unlock();Voice.keep(true);try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
@@ -1128,6 +1153,7 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
     const tok=this.tok;const chk=()=>{if(tok!==this.tok||!this.on)throw 'stop'};
     const say=async(t,nx)=>{chk();await Voice.say(t,nx);chk()};
     const wait=async ms=>{let left=ms;while(left>0){await sleep(100);chk();if(!this.paused)left-=100}};
+    while(this.paused){await sleep(200);chk()}
     const mode=this.o.mode;
     if(seg.type==='host'){NP.set('Ambrose','');await say(seg.text,this.nextText());return}
     if(seg.type==='lesson'){NP.set('Lesson',seg.title);for(let i=0;i<seg.paras.length;i++){await say(seg.paras[i],seg.paras[i+1]||this.nextText());await wait(250)}
@@ -1242,16 +1268,18 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
 
 /* ================= NOW PLAYING UI ================= */
 const NP={iv:null,t0:0,
-  open(mode){const el=$('#np');el.hidden=false;document.body.classList.add('np-open');el.classList.toggle('drive',mode==='drive');this.cap('');this.heard('');this.prompt('');this.paused(false);this.grade(false);this.t0=now();
+  open(mode){const el=$('#np');el.hidden=false;$('#np-mini').hidden=true;document.body.classList.add('np-open');el.classList.toggle('drive',mode==='drive');this.cap('');this.heard('');this.prompt('');this.paused(false);this.grade(false);this.t0=now();
     clearInterval(this.iv);this.iv=setInterval(()=>{const s=Math.floor((now()-this.t0)/1000);$('#np-time').textContent=pad(Math.floor(s/60))+':'+pad(s%60)},1000)},
-  close(){$('#np').hidden=true;document.body.classList.remove('np-open');clearInterval(this.iv)},
-  set(k,t){$('#np-kind').textContent=k;$('#np-title').textContent=t||'';this.heard('')},
+  close(){$('#np').hidden=true;$('#np-mini').hidden=true;document.body.classList.remove('np-open');clearInterval(this.iv)},
+  min(){$('#np').hidden=true;document.body.classList.remove('np-open');$('#np-mini').hidden=false;$('#np-mini-k').textContent='Ambrose · '+$('#np-kind').textContent},
+  max(){$('#np-mini').hidden=true;$('#np').hidden=false;document.body.classList.add('np-open')},
+  set(k,t){$('#np-kind').textContent=k;const mk=$('#np-mini-k');if(mk)mk.textContent='Ambrose · '+k;$('#np-title').textContent=t||'';this.heard('')},
   cap(t){const e=$('#np-cap');if(e)e.textContent=t},
   heard(t){const e=$('#np-heard');if(e)e.textContent=t?'“'+t+'”':''},
   prompt(t,live){const p=$('#np-prompt');if(!p)return;p.textContent=t||'';p.classList.toggle('live',!!live)},
   promptText(){const p=$('#np-prompt');return p?p.textContent:''},
   progress(i,n,inf){$('#np-bar').style.width=inf?'100%':Math.round(100*i/Math.max(1,n))+'%'},
-  paused(b){$('#np-pp').innerHTML=b?'<path d="M7 5l12 7-12 7z"/>':'<path d="M8 5v14M16 5v14"/>';if(b)this.prompt('Paused. Tap to resume');else if(this.promptText().indexOf('Paused')===0)this.prompt('')},
+  paused(b){const ic=b?'<path d="M7 5l12 7-12 7z"/>':'<path d="M8 5v14M16 5v14"/>';$('#np-pp').innerHTML=ic;const m=$('#np-mpp');if(m)m.innerHTML=ic;const l=$('#np-ppl');if(l)l.textContent=b?'Play':'Pause';const ms=$('#np-mini-s');if(ms)ms.textContent=b?'Paused · tap to go back':'Tap to go back';if(b)this.prompt('Paused. Tap to resume');else if(this.promptText().indexOf('Paused')===0)this.prompt('')},
   grade(b){$('#np-grade').hidden=!b},
   level(v){const e=$('#np-lv');if(e)e.style.width=Math.min(100,Math.round(v*900))+'%'}
 };
@@ -1648,7 +1676,7 @@ document.addEventListener('click',e=>{
   const sl=t.closest('[data-set-len]');if(sl){S.set.len=sl.dataset.setLen;touch('s');render();return}
   const sub=t.closest('[data-sub]');if(sub){subA=sub.dataset.sub;render();return}
   const g=t.closest('[data-g]');if(g){Sess.gradeVal=+g.dataset.g;return}
-  const np=t.closest('[data-np]');if(np){const k=np.dataset.np;if(k==='pause')Sess.togglePause();else if(k==='skip')Sess.skip();else if(k==='replay')Sess.again();else if(k==='end')Sess.end();return}
+  const np=t.closest('[data-np]');if(np){const k=np.dataset.np;if(k==='min'){NP.min();return}if(k==='open'){NP.max();return}if(k==='pause')Sess.togglePause();else if(k==='skip')Sess.skip();else if(k==='replay')Sess.again();else if(k==='end')Sess.end();return}
   if(t.closest('#np-tap')){if(Sess.tap())return;Sess.togglePause();return}
   const a=t.closest('[data-act]');if(a){act(a.dataset.act,a)}
   if(t.id==='sheet')closeSheet();
