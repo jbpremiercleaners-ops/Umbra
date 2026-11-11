@@ -622,7 +622,7 @@ const AI=()=>Gem.ready();
 function handleAIErr(e){
   const c=e&&e.code;
   if(c==='bad_key'){toast('Ambrose',"Google rejected the key. Check it under the gear icon.")}
-  else if(c==='rate_limited'){Gem.cool=now()+10*60e3;status();toast('Ambrose',"Free Gemini allowance used up for now. I'll work from my notebook and try again in ten minutes.")}
+  else if(c==='rate_limited'){Gem.cool=now()+10*60e3;status();toast('Ambrose',"Gemini allowance or credit used up. I'll mark you myself and try again in ten minutes.")}
   else if(c==='refused'){}
   else if(c&&c!=='invalid_json'){Gem.cool=now()+60e3;status()}
 }
@@ -1094,7 +1094,7 @@ function keyCard(){
 <ol class="small" style="margin:8px 0 10px;padding-left:18px;color:#e6dcdb"><li>On your phone, open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> and sign in with Google.</li><li>Tap <b>Create API key</b>, then copy it.</li><li>Paste it here.</li></ol>
 <label class="lab" for="key-in">Gemini API key</label><input type="text" id="key-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
 <button class="btn red full" style="margin-top:8px" data-act="key-save">Connect</button>
-<p class="small muted" style="margin-top:10px">It unlocks hands-free listening with no taps, proper marking of your answers, unlimited questions about you, and a natural voice. The free allowance has a daily cap; when it runs out he uses his notebook until it resets. On Google's free tier, what you send may be used to improve Google's products, so don't tell him anything you'd mind Google seeing. The key stays on this phone.</p></div>`;
+<p class="small muted" style="margin-top:10px">It unlocks hands-free listening with no taps, proper marking of your answers, unlimited questions about you, and a natural voice. Best set-up: add $10 of prepaid credit to the key with auto-reload off. That covers months of driving, can never charge you more, and with billing on Google doesn't use what you send to improve its products. If the credit ever runs out, he keeps going and marks you himself. The key stays on this phone.</p></div>`;
 }
 function earNote(ear){
   if(ear==='rec')return '';
