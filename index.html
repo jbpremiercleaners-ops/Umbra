@@ -74,8 +74,8 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .view > * + *{margin-top:16px}
 
 /* dock */
-.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:8px;padding:8px 10px 10px;background:rgba(24,10,13,.5);border:1px solid var(--line-2);border-radius:22px;backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 18px 50px rgba(0,0,0,.6)}
-.dock button{width:54px;height:54px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(160deg,#311318 0%,#13070a 70%);display:grid;place-items:center;position:relative;transition:transform .22s cubic-bezier(.3,1.7,.5,1)}
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:7px;padding:8px 10px 10px;background:rgba(24,10,13,.5);border:1px solid var(--line-2);border-radius:22px;backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.dock button{width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(160deg,#311318 0%,#13070a 70%);display:grid;place-items:center;position:relative;transition:transform .22s cubic-bezier(.3,1.7,.5,1)}
 .dock button:active{transform:translateY(-9px) scale(1.14)}
 .dock button.on::after{content:"";position:absolute;bottom:-7px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--bone)}
 .dock svg{width:26px;height:26px;fill:none;stroke:var(--bone);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -241,6 +241,7 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
     <b class="brand">Umbra</b>
     <button class="mi" data-go="transit">Transit</button>
     <button class="mi" data-go="path">Path</button>
+    <button class="mi" data-go="mirror">Mirror</button>
     <button class="mi" data-go="ambrose">Ambrose</button>
     <button class="mi" data-go="pulse">Pulse</button>
     <span class="mb-right">
@@ -262,6 +263,7 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
 <nav class="dock" id="dock" aria-label="Sections">
   <button data-go="transit" aria-label="Transit"><svg viewBox="0 0 24 24"><path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/></svg></button>
   <button data-go="path" aria-label="Path"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><path d="M6.5 17.5l4-4M13.5 10.5l4-4"/><circle cx="5" cy="5" r="1" /><circle cx="19" cy="19" r="1"/></svg></button>
+  <button data-go="mirror" aria-label="Mirror"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="6" ry="7"/><path d="M12 16v6M9 22h6"/><path d="M9.6 6.2a3.2 3.2 0 0 1 3.2-1.4"/></svg></button>
   <button data-go="ambrose" aria-label="Ambrose"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r=".6" fill="#efe8e7"/></svg></button>
   <button data-go="pulse" aria-label="Pulse"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
 </nav>
@@ -293,10 +295,10 @@ body.np-open .app,body.np-open .dock{visibility:hidden}
 <script>
 'use strict';
 /* ================= CURRICULUM ================= */
-const TRACKS={READ:'Read them',MOVE:'Move them',DEEP:'Beneath the surface',DARK:'The dark side'};
-const DOMS=[['mind','Mind'],['read','Read'],['persuade','Persuade'],['deal','Deal'],['dark','Dark'],['power','Power']];
+const TRACKS={MIND:'Know the machine',READ:'Read them',MOVE:'Move them',DEEP:'Beneath the surface',DARK:'The dark side'};
+const DOMS=[['mind','Mind'],['self','Self'],['read','Read'],['persuade','Persuade'],['deal','Deal'],['dark','Dark'],['power','Power']];
 const MODULES=[
-{id:'os',n:1,track:'READ',dom:'mind',title:'The Operating System',sum:'How the mind really decides: two systems, anchors, loss aversion.',
+{id:'os',n:1,track:'MIND',dom:'mind',title:'The Operating System',sum:'How the mind really decides: two systems, anchors, loss aversion.',
 script:[
 "Before you can read anyone, Joe, you need to know the machine you're reading. Daniel Kahneman split the mind into two systems. System One is fast, automatic and emotional. It has already decided whether it likes you before you've finished the handshake. System Two is slow, effortful and lazy. Mostly, it signs off whatever System One hands it. Almost all persuasion is aimed at System One.",
 "Here's the one to remember. Anchoring. In a famous experiment, people spun a wheel rigged to stop on ten or sixty-five, then guessed what percentage of African countries were in the United Nations. The ten group guessed around twenty-five. The sixty-five group guessed around forty-five. A meaningless number moved their judgement.",
@@ -308,6 +310,19 @@ drill:"In your next negotiation, note who says the first number and how far the 
 vids:[['CjVQJdIrDJ0','Thinking, Fast and Slow','Daniel Kahneman · Talks at Google','Lecture'],['HefjkqKCVpo','Anchoring','Daniel Kahneman','Short'],['wEwGBIr_RIw','12 Cognitive Biases Explained','Animated explainer','Explainer'],['NNnIGh9g6fA','Human Behavioral Biology: Introduction','Robert Sapolsky · Stanford','Deep lecture']],
 find:['anchoring bias negotiation','loss aversion explained','system 1 system 2 examples'],
 cards:[["In the spinning-wheel experiment, what did a random number do to people's estimates?","It anchored them. A high random number produced higher estimates and a low one produced lower estimates.",["anchor","higher|high","number"]],["Roughly how much harder do losses hit than equal gains?","About twice as hard. That's loss aversion.",["twice|two|2|double"]],["Which of Kahneman's two systems does most persuasion target, and why?","System One, the fast emotional one, because System Two is lazy and usually rubber-stamps it.",["one|1|fast","emotion|automatic|intuit"]]]},
+
+{id:'inner',n:2,track:'MIND',dom:'self',title:'The Inner Game',sum:'Your own emotions under pressure: name them, reframe them, breathe, plan.',
+script:[
+"Everything I've taught you about reading other people applies to you first, Joe. The person most likely to lose you a deal is the one in your seat. When a buyer pushes on price, your body reacts before you choose to. Heat in the face, a rush to fill the silence, a discount you didn't need to give.",
+"Lisa Feldman Barrett's research says emotions aren't fixed reflexes that happen to you. Your brain builds them from body signals and context, which means you have more say than it feels like. So, three tools. First, name it. Matthew Lieberman's brain-scanning studies found that putting a feeling into words, even one word, quietens the brain's threat response. Irritated. Rushed. Small. Say it silently and you're already back in the driving seat.",
+"Second, reframe it. James Gross's work shows that changing what a situation means changes the emotion, and works better over time than gritting your teeth and suppressing it. The buyer isn't insulting you. He's negotiating, which means he's interested. Third, use your body. The physiological sigh: two inhales through the nose, one long exhale through the mouth. A 2023 Stanford study found five minutes a day of this kind of breathing lifted mood more than mindfulness meditation did.",
+"Then plan it. Peter Gollwitzer's if-then plans, if this happens then I'll do that, make people noticeably more likely to follow through. If a buyer says the rent's too high, then I breathe and mirror. Ethan Kross adds one more: talk to yourself by name. Joe, what's the play here? Distance turns panic into a problem to solve. I'll be watching for the moments that get under your skin. When they repeat, I'll tell you."],
+concepts:[['Name it','Affect labelling: one word for the feeling quietens the threat response.'],['Reframe it','Change what it means and the feeling changes.'],['Breathe it','Physiological sigh: two in through the nose, one long out.'],['Plan it','If-then plans for your known triggers.'],['Distance it','Talk to yourself by name.']],
+deal:"Before you name a price or take a call you're dreading, do two physiological sighs. When the pushback lands, name your feeling silently, then mirror theirs out loud.",
+drill:"Pick the one moment in a deal that winds you up most. Make an if-then plan for it, and use it the next time it happens.",
+vids:[['0gks6ceq4eQ',"You Aren't at the Mercy of Your Emotions",'Lisa Feldman Barrett · TED','Talk'],['0P7TLLewnrs','The Power of Naming Your Emotions','Affect labelling explainer','Short'],['iOi1OJWh-pI','The Fastest Way to Reduce Stress in Real Time','Andrew Huberman','Short'],['xb0nLpdWttA','How to Harness Your Inner Voice','Ethan Kross · TED','Talk'],['GTAPSwR3tWE','Overgeneralization: The Thinking Error','Dr David Burns','Explainer']],
+find:['affect labeling research','cognitive reappraisal vs suppression','implementation intentions if then plans'],
+cards:[["What is affect labelling, and why does it work?","Naming a feeling in words, even one word. It quietens the brain's threat response so you think more clearly.",["name|label|word","calm|quiet|threat|amygdala|reduce"]],["Describe the physiological sigh.","Two inhales through the nose, then one long exhale through the mouth.",["two|double","inhale|breath|in","exhale|out"]],["Turn this into an if-then plan: you get defensive when buyers question the price.","If a buyer questions the price, then I breathe, mirror their words and stay silent.",["if","then","breath|mirror|label|pause|silent"]]]},
 
 {id:'body',n:2,track:'READ',dom:'read',title:'The Body Speaks',sum:'Navarro\'s FBI method: comfort, discomfort, feet, pacifiers, baselines.',
 script:[
@@ -479,6 +494,24 @@ vids:[['gP-tuAT9_3k','The BITE Model Explained','Steven Hassan','Interview'],['5
 find:['Edward Bernays torches of freedom','BITE model cult control','Loftus misinformation effect'],
 cards:[["What does Steven Hassan's BITE model stand for?","Control of Behaviour, Information, Thought and Emotion.",["behav","inform","thought","emotion"]],["In Loftus's car crash study, what did the word 'smashed' do?","It raised speed estimates, and later made people more likely to falsely remember broken glass.",["speed|faster|higher|fast","glass|memor|remember"]],["What did Bernays call his method of shaping public opinion?","The engineering of consent.",["engineer","consent"]]]}
 ];
+MODULES.forEach((m,i)=>{m.n=i+1});
+
+const EMO=[
+{id:'label',name:'Name it',what:"Affect labelling. Putting the feeling into one word quietens the brain's threat response.",ex:'Next time it hits, name the feeling silently in one word before you speak.'},
+{id:'reframe',name:'Reframe it',what:'Cognitive reappraisal. Change what the moment means and the feeling changes with it.',ex:'When it happens, find two other explanations for what the other person did before you react.'},
+{id:'sigh',name:'The physiological sigh',what:'Two inhales through the nose, one long exhale. The quickest way to bring your body down.',ex:'Do two physiological sighs before every price conversation this week.'},
+{id:'ifthen',name:'If-then plan',what:'Implementation intentions. Deciding your response in advance makes you far more likely to use it.',ex:'Make one if-then plan for this trigger and say it out loud before your next viewing.'},
+{id:'distance',name:'Distanced self-talk',what:'Talking to yourself by name puts space between you and the feeling.',ex:"When it starts, ask yourself by name: what's the play here?"},
+{id:'pause',name:'The tactical pause',what:'The threat response peaks and fades. Ten seconds is often enough to answer instead of react.',ex:'Have a pause line ready, like "Let me think about that properly", and use it once this week.'},
+{id:'distortion',name:'Spot the distortion',what:'Thinking errors such as mind-reading, catastrophising and taking things personally inflate the feeling.',ex:'After it happens, note which thinking error was in your head and what the facts actually were.'},
+{id:'approval',name:'The approval trap',what:'Wanting to be liked makes you concede early. Discomfort in silence is often a need for approval.',ex:'In your next negotiation, hold a "no" for five full seconds before you soften it.'},
+{id:'rejection',name:'A no is data',what:'Rejection stings because it feels personal. In sales a no is information about fit, timing or price.',ex:'For the next three nos, note what each one told you about the deal.'},
+{id:'tilt',name:'Reset between calls',what:'Tilt, from poker: one bad moment bleeds into the next unless you deliberately reset.',ex:'After a bad call, take sixty seconds to stand, breathe and name the next goal before you dial again.'},
+{id:'halt',name:'HALT check',what:'Hungry, angry, lonely or tired makes anyone more reactive.',ex:'Before your hardest meeting this week, check HALT and fix one of them.'},
+{id:'urge',name:'Surf the urge',what:'Urges rise, peak and pass if you do not act on them. Useful for the urge to discount or fill silence.',ex:'Next time you feel the urge to drop the price or keep talking, count three breaths first.'}
+];
+const EMOS=['calm','focused','confident','wired','anxious','irritated','frustrated','defensive','flat','drained','rushed','proud'];
+const SAFE="I'm stepping out of character for a moment. That sounds heavy, and it's bigger than sales practice. Please talk to someone you trust today, or call Samaritans free on 116 123, any time, day or night.";
 
 const PRIMER="You're walking into a viewing. Sixty seconds, Joe. One: baseline them in the first two minutes. How they stand, their hands, how much they talk. Two: watch the feet when you mention rent, rates or lease length. Three: the moment something changes, label it. Seems like something about the terms is bothering you. Four: ask one implication question about where they are now. What happens if you're still there in two years? Five: after any number, stop talking. Let them fill it. Go on. I'll want to hear how it went.";
 
@@ -538,14 +571,14 @@ const MOD=Object.fromEntries(MODULES.map(m=>[m.id,m]));
 const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
 const pct=v=>v==null?'—':Math.round(v*100)+'%';
 const words=s=>String(s).split(/\s+/).filter(Boolean).length;
-const ROUTES=['transit','path','ambrose','pulse'];
+const ROUTES=['transit','path','mirror','ambrose','pulse'];
 const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 
 /* ================= STATE (on this device) ================= */
-const DEF_S=()=>({v:2,upd:0,name:'Joe',cards:{},heard:{},watched:{},ev:[],agg:{mode:{},tod:{},kind:{},days:{},mins:0,sessions:0},pending:[],asked:[],unans:[],chat:[],curIQ:'',iqQ:[],lastReact:'',lastBackup:0,
+const DEF_S=()=>({v:2,upd:0,name:'Joe',cards:{},heard:{},watched:{},ev:[],agg:{mode:{},tod:{},kind:{},days:{},mins:0,sessions:0},pending:[],asked:[],unans:[],chat:[],curIQ:'',iqQ:[],lastReact:'',lastBackup:0,lastCheck:0,lastPatternRun:0,moodN:0,taught:{},
   set:{key:'',ear:'auto',voice:'device',gv:'Enceladus',dv:'',rate:0.92,pitch:0.8,think:7,mode:'drive',len:'20',primer:false,models:null}});
 const DEF_D=()=>({upd:0,ai:[]});
-const DEF_B=()=>({upd:0,core:{profile:'',learning:'',focus:'',hyp:[]},facts:[],field:[],qa:[]});
+const DEF_B=()=>({upd:0,core:{profile:'',learning:'',focus:'',hyp:[],mirror:'',concernAt:0},facts:[],field:[],qa:[],moods:[],patterns:[],missions:[],applied:[]});
 function readLS(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
 function hydrate(def,v){const d=def();return (v&&typeof v==='object')?Object.assign(d,v):d}
 let S=hydrate(DEF_S,readLS('umbra2.s')), D=hydrate(DEF_D,readLS('umbra2.d')), B=hydrate(DEF_B,readLS('umbra2.b'));
@@ -553,11 +586,11 @@ function fix(){
   const d=DEF_S();
   S.set=Object.assign(d.set,S.set||{}); S.agg=Object.assign(d.agg,S.agg||{});
   ['mode','tod','kind','days'].forEach(k=>{if(!S.agg[k]||typeof S.agg[k]!=='object')S.agg[k]={}});
-  ['cards','heard','watched'].forEach(k=>{if(!S[k]||typeof S[k]!=='object'||Array.isArray(S[k]))S[k]={}});
+  ['cards','heard','watched','taught'].forEach(k=>{if(!S[k]||typeof S[k]!=='object'||Array.isArray(S[k]))S[k]={}});
   ['ev','pending','asked','unans','chat','iqQ'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
   if(!Array.isArray(D.ai))D.ai=[];
   const b=DEF_B(); B.core=Object.assign(b.core,B.core||{}); if(!Array.isArray(B.core.hyp))B.core.hyp=[];
-  ['facts','field','qa'].forEach(k=>{if(!Array.isArray(B[k]))B[k]=[]});
+  ['facts','field','qa','moods','patterns','missions','applied'].forEach(k=>{if(!Array.isArray(B[k]))B[k]=[]});
 }
 fix();
 let saveT=0,storeFull=false;
@@ -843,12 +876,12 @@ const Voice={voices:[],tok:0,cache:new Map(),src:null,
 };
 
 /* ================= AMBROSE'S MIND ================= */
-const PERSONA=()=>nm(`You are Ambrose, the voice and mind inside UMBRA, Joe's private tutor in dark psychology, persuasion, negotiation and sales. Character: a calm, softly spoken, unnervingly attentive man who has clearly been studying Joe closely and keeps notes on everything. Slightly creepy in how much he notices and remembers, but entirely on Joe's side: he wants Joe to read people brilliantly and become a formidable salesman. Never threatening, never flirtatious; the unease comes from his attentiveness and calm. British English. Blunt and accurate: flag shaky science where relevant (micro-expressions as lie detectors, the Stanford prison experiment, the 93% myth). Teach manipulation so Joe can recognise it and use the clean, legal version in sales; never coach illegal or deceptive practice such as inventing offers or misrepresenting a property, and say so briefly if asked.`);
+const PERSONA=()=>nm(`You are Ambrose, the voice and mind inside UMBRA, Joe's private tutor in dark psychology, persuasion, negotiation and sales. Character: a calm, softly spoken, unnervingly attentive man who has clearly been studying Joe closely and keeps notes on everything. Slightly creepy in how much he notices and remembers, but entirely on Joe's side: he wants Joe to read people brilliantly and become a formidable salesman. Never threatening, never flirtatious; the unease comes from his attentiveness and calm. British English. Blunt and accurate: flag shaky science where relevant (micro-expressions as lie detectors, the Stanford prison experiment, the 93% myth). Teach manipulation so Joe can recognise it and use the clean, legal version in sales; never coach illegal or deceptive practice such as inventing offers or misrepresenting a property, and say so briefly if asked. If Joe ever describes persistent hopelessness, panic or thoughts of harming himself, drop the act, speak plainly and kindly, and suggest he talks to someone he trusts or calls Samaritans on 116 123.`);
 function ctxBlock(nf=40){
   const facts=B.facts.slice(-nf).map(f=>'- '+f.text).join('\n')||'(nothing yet)';
   const mods=MODULES.map(m=>`${m.id} "${m.title}": ${Math.round(mastery(m.id)*100)}%${S.heard[m.id]?'':' (not taught yet)'}`).join('\n');
   const st=learnStats();
-  return nm(`ABOUT JOE\nRole: commercial property sales negotiator in the UK. Goal: understand people deeply and become an exceptional salesman.\nAmbrose's current profile of him: ${B.core.profile||'(none yet)'}\nKnown facts:\n${facts}\n\nLEARNING DATA\nAnswers so far: ${st.answers}; recent accuracy: ${st.recent==null?'n/a':Math.round(st.recent*100)+'%'}; minutes listened: ${st.mins}; streak: ${st.streak} days\nBy mode: ${JSON.stringify(st.modes)}\nBy time of day: ${JSON.stringify(st.tod)}\nBy question type: ${JSON.stringify(st.kind)}\nModule mastery:\n${mods}`);
+  return nm(`ABOUT JOE\nRole: commercial property sales negotiator in the UK. Goal: understand people deeply and become an exceptional salesman.\nAmbrose's current profile of him: ${B.core.profile||'(none yet)'}\nKnown facts:\n${facts}\n\nLEARNING DATA\nAnswers so far: ${st.answers}; recent accuracy: ${st.recent==null?'n/a':Math.round(st.recent*100)+'%'}; minutes listened: ${st.mins}; streak: ${st.streak} days\nBy mode: ${JSON.stringify(st.modes)}\nBy time of day: ${JSON.stringify(st.tod)}\nBy question type: ${JSON.stringify(st.kind)}\nEmotional patterns on file: ${patternNames()}\nOpen jobs: ${openMissions().map(m=>m.title).join('; ')||'none'}\nModule mastery:\n${mods}`);
 }
 const CMD='"command": "none, or skip / repeat / stop / pause if he is asking you to skip, repeat the question, end the session or pause; dont_know if he says he doesn\'t know"';
 async function gradeText(c,ans){
@@ -877,6 +910,61 @@ async function genBatch(personalOnly){
   return (r&&Array.isArray(r.items)?r.items:[]).filter(x=>x&&x.q);
 }
 
+/* ================= MIRROR: emotions, patterns, jobs, application ================= */
+function patternNames(){return B.patterns.slice(-8).map(p=>p.name+' ('+p.trigger+')').join('; ')||'none yet'}
+const MOODJSON='"emotions": ["1 to 3 lowercase emotion words"], "intensity": 1 to 10, "valence": -2 to 2, "trigger": "what set it off, short, or empty", "context": "deal, work, people, self or other", "response": "what he did or wants to do about it, short, or empty", "say": "your spoken reaction, one or two short sentences, in character: notice something specific; if it matches a pattern you already know, name it", "concern": true only if he describes persistent hopelessness, panic or thoughts of harming himself, otherwise false';
+function saveMood(r,text,src,chips,intensity){
+  const em=(r&&Array.isArray(r.emotions)&&r.emotions.length?r.emotions:(chips||[])).map(x=>String(x).toLowerCase()).slice(0,3);
+  const m={id:uid(),t:now(),text:String(text||'').slice(0,600),src,emo:em,int:clamp(Math.round(+((r&&r.intensity)||intensity||5)),1,10),val:clamp(+((r&&r.valence)||0),-2,2),trig:String(r&&r.trigger||''),ctx:String(r&&r.context||''),resp:String(r&&r.response||'')};
+  B.moods.push(m);S.moodN=(S.moodN||0)+1;if(r&&r.concern===true)B.core.concernAt=now();touch('sb');maybePatterns();return m;
+}
+async function moodText(text,src,chips,intensity){
+  let r=null;
+  if(AI()){try{r=await Gem.json(nm(`${ctxBlock(12)}\n\nPatterns you've already noticed: ${patternNames()}\n\nJoe is telling you how he feels${chips&&chips.length?' ('+chips.join(', ')+(intensity?', '+intensity+'/10':'')+')':''}: "${text}"\n\nReply with only JSON: {${MOODJSON}}`))}catch(e){handleAIErr(e)}}
+  saveMood(r,text,src,chips,intensity);return r||{};
+}
+async function moodAudio(wav){
+  const r=await Gem.json(nm(`${ctxBlock(12)}\n\nPatterns you've already noticed: ${patternNames()}\n\nYou asked Joe how he's feeling and what's behind it. His spoken reply is attached (likely in his car, so expect road noise).\n\nReply with only JSON: {"heard": "what he said, verbatim; empty if nothing intelligible", ${CMD}, ${MOODJSON}}`),{audio:wav});
+  if(r&&r.heard&&(!r.command||r.command==='none'))saveMood(r,r.heard,'voice');
+  return r||{};
+}
+function maybePatterns(){if(AI()&&(S.moodN||0)>=4&&now()-(S.lastPatternRun||0)>6*3600e3)findPatterns().catch(handleAIErr)}
+async function findPatterns(){
+  const moods=B.moods.slice(-80).map(m=>`${ymd(m.t)} | ${m.emo.join('/')} ${m.int}/10 | trigger: ${m.trig||'-'} | context: ${m.ctx||'-'} | did: ${m.resp||'-'} | said: ${m.text.slice(0,160)}`).join('\n');
+  const field=B.field.slice(-30).map(f=>`${ymd(f.t)} | ${f.text.slice(0,240)}${f.feel&&f.feel.length?' | felt: '+f.feel.join('/'):''}`).join('\n');
+  const qa=B.qa.slice(-25).map(x=>`Q: ${x.q} A: ${String(x.a).slice(0,200)}`).join('\n');
+  const known=B.patterns.map(p=>`${p.id}: ${p.name} (x${p.count})`).join('\n')||'none';
+  const r=await Gem.json(nm(`${ctxBlock(20)}\n\nCHECK-INS\n${moods||'(none)'}\n\nFIELD LOGS\n${field||'(none)'}\n\nINTERVIEW ANSWERS\n${qa||'(none)'}\n\nPATTERNS ALREADY ON FILE\n${known}\n\nFind Joe's recurring emotional patterns: situations that repeatedly set off the same feeling and the same response, in deals, work or life. Only report a pattern that shows up at least twice in the data. Be specific and blunt, and never diagnose. Map each to 1 to 3 tool ids from: ${EMO.map(e=>e.id+' ('+e.name+')').join(', ')}; and 0 to 2 module ids from: ${MODULES.map(m=>m.id).join(', ')}.\n\nReply with only JSON: {"read": "2 or 3 sentences, Ambrose's overall read on Joe's emotional patterns", "patterns": [{"id": "the existing id if it is the same pattern, else empty", "name": "short memorable name", "trigger": "the situation", "emotion": "what he feels", "response": "what he tends to do", "cost": "what it costs him", "count": number of times seen, "evidence": ["date: short quote"], "trend": "new, growing, steady or easing", "concepts": ["tool ids"], "modules": ["module ids"], "exercise": {"title": "short job name", "detail": "one specific thing to do next time it happens"}}]}`),{tier:'main'});
+  const list=Array.isArray(r&&r.patterns)?r.patterns:[];
+  list.forEach(x=>{if(!x||!x.name)return;const p=B.patterns.find(q=>x.id&&q.id===x.id)||B.patterns.find(q=>norm(q.name)===norm(x.name));
+    const f={name:String(x.name),trigger:String(x.trigger||''),emotion:String(x.emotion||''),response:String(x.response||''),cost:String(x.cost||''),count:Math.max(1,+x.count||1),evidence:(Array.isArray(x.evidence)?x.evidence:[]).map(String).slice(0,5),trend:String(x.trend||'steady').toLowerCase(),concepts:(Array.isArray(x.concepts)?x.concepts:[]).filter(id=>EMO.some(e=>e.id===id)).slice(0,3),modules:(Array.isArray(x.modules)?x.modules:[]).filter(id=>MOD[id]).slice(0,2),exercise:x.exercise&&x.exercise.title?{title:String(x.exercise.title),detail:String(x.exercise.detail||'')}:null,last:now()};
+    if(p){Object.assign(p,f);(p.hist=p.hist||[]).push({t:now(),c:f.count})}else B.patterns.push(Object.assign({id:'p-'+uid(),first:now(),hist:[{t:now(),c:f.count}]},f))});
+  if(r&&r.read)B.core.mirror=String(r.read);
+  S.lastPatternRun=now();S.moodN=0;touch('sb');render();return list.length;
+}
+function patternToTeach(){const t=S.taught||{};return B.patterns.filter(p=>p.trend!=='easing'&&(p.concepts||[]).length).sort((a,b)=>(b.count||0)-(a.count||0)).find(p=>now()-(t[p.concepts[0]]||0)>3*DAY)||null}
+function addMission(m){if(B.missions.some(x=>x.status==='open'&&(x.title===m.title||(m.ref&&x.ref===m.ref))))return null;const x=Object.assign({id:'m-'+uid(),t:now(),status:'open',result:'',note:'',asks:0},m);B.missions.push(x);touch('b');return x}
+const openMissions=()=>B.missions.filter(m=>m.status==='open');
+function closeMission(m,result,note,techs){
+  m.status='done';m.result=result;m.note=String(note||'');m.done=now();const base={t:now(),out:result,src:'mission'};
+  B.applied.push(Object.assign({id:uid(),mod:m.mod||(m.src==='pattern'?'inner':''),concept:m.concept||'',tech:m.title},base));
+  (techs||[]).forEach(a=>{if(a&&a.technique)B.applied.push(Object.assign({id:uid(),mod:MOD[a.module]?a.module:'',concept:'',tech:String(a.technique)},base))});touch('b');
+}
+function doing(mid,t=now()){const w=B.applied.filter(a=>a.mod===mid&&t-a.t<45*DAY).reduce((s,a)=>s+(a.out==='worked'?1:a.out==='partly'?0.6:a.out==='didnt'?0.35:0.5),0);return clamp(w/3,0,1)}
+function knowDo(){return DOMS.map(([id,l])=>{const ms=MODULES.filter(m=>m.dom===id);return {id,l,know:ms.reduce((a,m)=>a+mastery(m.id),0)/ms.length,doit:ms.reduce((a,m)=>a+doing(m.id),0)/ms.length}})}
+async function missionCheckAudio(m,wav){
+  return Gem.json(nm(`You set Joe a job: "${m.title}: ${m.detail}". You asked whether he did it and what happened. His spoken reply is attached (likely in his car).\n\nReply with only JSON: {"heard": "verbatim, empty if nothing intelligible", ${CMD}, "did": "yes, partly or no", "result": "worked, partly, didnt or unknown", "applied": [{"technique": "short name of any technique he describes using", "module": "module id from ${MODULES.map(x=>x.id).join(', ')} or empty"}], "learned": "one line on what this shows about him, or empty", "say": "your spoken reaction, one or two short sentences, in character; if he didn't do it, be blunt but not harsh and tell him you'll ask again"}`),{audio:wav});
+}
+async function missionCheckText(m,text){
+  if(!AI()){const s=norm(text);const did=/\b(no|not yet|didn t|didnt|forgot|haven t)\b/.test(s)?'no':'yes';return {did,result:did==='no'?'unknown':'worked',applied:[],say:did==='no'?"Then do it. I'll ask again.":'Good. Noted.'}}
+  return Gem.json(nm(`You set Joe a job: "${m.title}: ${m.detail}". You asked whether he did it. He said: "${text}"\n\nReply with only JSON: {"did": "yes, partly or no", "result": "worked, partly, didnt or unknown", "applied": [{"technique": "short name", "module": "module id or empty"}], "learned": "one line or empty", "say": "your reaction, one or two short sentences, in character"}`));
+}
+function applyMissionResult(m,r){
+  if(!r)return;const did=String(r.did||'').toLowerCase();
+  if(did==='no'){m.asks=(m.asks||0)+1;if(m.asks>=3){m.status='skipped';m.done=now()}touch('b');return}
+  if(did==='yes'||did==='partly'){const res=['worked','partly','didnt'].includes(r.result)?r.result:(did==='partly'?'partly':'worked');closeMission(m,res,r.heard||'',r.applied);if(r.learned)addFacts([r.learned],'job')}
+}
+
 /* ================= SESSION ENGINE ================= */
 const est=t=>Math.round(words(t)/2.4)+3;
 const lessonSeg=m=>({type:'lesson',mod:m.id,title:pad(m.n)+' · '+m.title,paras:m.script.concat(['On the deal. '+m.deal]),est:est(m.script.join(' '))+20});
@@ -896,8 +984,11 @@ function buildPlan(o){
   const rev=c=>{if(c&&!used.has(c.id)){used.add(c.id);add(qSeg(c))}};
   const budget=(o.len==='inf'?14:+o.len||20)*60;
   add(hostSeg(introLine(o)));
+  if(earMode()!=='none'&&now()-(S.lastCheck||0)>3*3600e3&&!o.focus)add({type:'mood',est:30});
   if(o.kind==='interview'){add(hostSeg("No lessons this time. Just you. I'll ask, you answer honestly, and I'll keep going until you tell me to stop."));interviewQs(4).forEach(q=>add(iqSeg(q)));return segs}
   if(o.focus){const m=MOD[o.focus];add(lessonSeg(m));masteryCards(m.id).forEach(rev);add(iqSeg(interviewQs(1)[0]));return segs}
+  openMissions().filter(m=>now()-m.t>10*3600e3).sort((a,b)=>a.t-b.t).slice(0,2).forEach(m=>add({type:'mission',m,est:35}));
+  const pat=patternToTeach();if(pat)add({type:'pattern',p:pat,est:45});
   if(o.primer)add({type:'lesson',mod:null,title:'Viewing primer',paras:[PRIMER],est:est(PRIMER)});
   const due=dueCards();const heard=MODULES.filter(m=>S.heard[m.id]);
   const avgH=heard.length?heard.reduce((a,m)=>a+mastery(m.id),0)/heard.length:1;
@@ -958,7 +1049,42 @@ const Sess={on:false,q:[],i:0,o:null,tok:0,paused:false,replay:false,filling:nul
     const mode=this.o.mode;
     if(seg.type==='host'){NP.set('Ambrose','');await say(seg.text,this.nextText());return}
     if(seg.type==='lesson'){NP.set('Lesson',seg.title);for(let i=0;i<seg.paras.length;i++){await say(seg.paras[i],seg.paras[i+1]||this.nextText());await wait(250)}
-      if(seg.mod){S.heard[seg.mod]=(S.heard[seg.mod]||0)+1;logEv({type:'lesson',mod:seg.mod,mode});touch('s')}return}
+      if(seg.mod){S.heard[seg.mod]=(S.heard[seg.mod]||0)+1;logEv({type:'lesson',mod:seg.mod,mode});touch('s');const md=MOD[seg.mod];if(md&&addMission({title:'Drill · '+md.title,detail:md.drill,src:'module',mod:md.id}))await say("Your job before I see you next. "+md.drill+" I'll ask you how it went.")}return}
+    if(seg.type==='mood'){
+      NP.set('Check-in','');await say(pick(["Before we start. How are you, honestly? And what's behind it?","First, you. How are you feeling right now, and why?"]));
+      const h=await this.hear(tok,18000);chk();S.lastCheck=now();touch('s');
+      if(!h){await say("Fine. Keep it to yourself. For now.");return}
+      NP.prompt('Ambrose is reading you…',true);let r;
+      try{r=h.wav?await moodAudio(h.wav):await moodText(h.text,'voice')}
+      catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');if(h.text)saveMood(null,h.text,'voice');await say('Noted.');return}
+      chk();NP.prompt('');if(r.heard)NP.heard(r.heard);
+      if(String(r.command||'none')==='stop'){this.on=false;this.tok++;throw 'stop'}
+      if(r.concern===true){await say(SAFE);return}
+      await say(r.say||pick(ACKS));return;
+    }
+    if(seg.type==='mission'){
+      const m=seg.m;if(m.status!=='open')return;NP.set('Your job',m.title);
+      await say(pick(["Last time I gave you a job.","Before we go on. I set you something."])+' '+m.detail+' Did you do it? What happened?');
+      if(earMode()==='none'){await say("Tell me in the Mirror tab when you've parked.");return}
+      const h=await this.hear(tok,20000);chk();
+      if(!h){m.asks=(m.asks||0)+1;touch('b');await say("Silence. I'll take that as a no, and I'll ask again.");return}
+      NP.prompt('Ambrose is noting that…',true);let r;
+      try{r=h.wav?await missionCheckAudio(m,h.wav):await missionCheckText(m,h.text)}
+      catch(e){if(e==='stop')throw e;handleAIErr(e);NP.prompt('');await say("I didn't catch that. Tell me in the Mirror tab later.");return}
+      chk();NP.prompt('');if(r.heard)NP.heard(r.heard);
+      const cmd=String(r.command||'none');if(cmd==='stop'){this.on=false;this.tok++;throw 'stop'}if(cmd==='skip')return;
+      applyMissionResult(m,r);await say(r.say||'Noted.');return;
+    }
+    if(seg.type==='pattern'){
+      const p=seg.p;const c=EMO.find(e=>e.id===(p.concepts||[])[0]);NP.set('Pattern',p.name);
+      await say(`I've noticed something about you. ${p.name}. When ${p.trigger}, you feel ${p.emotion}, and you ${p.response}. It's costing you this: ${p.cost}.`);
+      if(c){await say(`Here's the tool. ${c.name}. ${c.what}`);(S.taught=S.taught||{})[c.id]=now();touch('s')}
+      const ex=p.exercise||(c?{title:c.name,detail:c.ex}:null);
+      const recent=B.missions.some(m=>m.ref===p.id&&m.status==='done'&&now()-(m.done||0)<3*DAY);
+      if(recent)await say(pick(["You did the job on this one recently. Keep doing it until it's boring.","You've started breaking this one. Don't stop now."]));
+      else if(ex&&addMission({title:ex.title,detail:ex.detail,src:'pattern',ref:p.id,concept:c?c.id:'',mod:'inner'}))await say(`Your job. ${ex.detail} I'll ask you how it went.`);
+      return;
+    }
     if(seg.type==='q'){
       const c=seg.card;NP.set(c.kind==='scenario'?'Scenario':'Recall',(MOD[c.mod]||{}).title||'');
       for(let attempt=0;attempt<3;attempt++){
@@ -1054,7 +1180,10 @@ function brainMarkdown(){
   B.facts.slice().reverse().forEach(f=>{md+=`- ${f.text} _(${d(f.t)}, ${f.src})_\n`});
   md+=`\n## Field log\n`;B.field.slice().reverse().forEach(f=>{md+=`### ${d(f.t)}\n${f.text}\n${f.an?'\n> '+f.an.replace(/\n/g,'\n> ')+'\n':''}\n`});
   md+=`\n## Interview answers\n`;B.qa.slice().reverse().forEach(x=>{md+=`**Q:** ${x.q}\n**A:** ${x.a}\n\n`});
-  md+=`## Mastery\n| Level | Module | Mastery |\n|---|---|---|\n`;MODULES.forEach(m=>{md+=`| ${pad(m.n)} | ${m.title} | ${Math.round(mastery(m.id)*100)}% |\n`});
+  md+=`\n## Patterns\n`;B.patterns.forEach(p=>{md+=`### ${p.name} (x${p.count}, ${p.trend})\n- When: ${p.trigger}\n- Feel: ${p.emotion}\n- Do: ${p.response}\n- Cost: ${p.cost}\n${p.exercise?'- Exercise: '+p.exercise.title+': '+p.exercise.detail+'\n':''}\n`});
+  md+=`\n## Jobs\n`;B.missions.slice().reverse().forEach(m=>{md+=`- [${m.status==='done'?'x':' '}] ${m.title}${m.result?' → '+m.result:''} _(${d(m.t)})_\n`});
+  md+=`\n## Check-ins\n`;B.moods.slice().reverse().forEach(m=>{md+=`- ${d(m.t)} · ${m.emo.join('/')} ${m.int}/10 · ${m.text}\n`});
+  md+=`\n## Mastery\n| Level | Module | Mastery |\n|---|---|---|\n`;MODULES.forEach(m=>{md+=`| ${pad(m.n)} | ${m.title} | ${Math.round(mastery(m.id)*100)}% |\n`});
   return md;
 }
 function download(name,text,type){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);return true}catch(e){return false}}
@@ -1081,6 +1210,7 @@ ${S.set.key?'':keyCard()}
 <div class="card"><p class="eyebrow">Ambrose has planned</p><div style="margin-top:6px">
 <div class="kv"><span class="muted">${cons?'Today':'New lesson'}</span><b>${cons?'Consolidation, no new lesson':esc(pad(m.n)+' '+m.title)}</b></div>
 <div class="kv"><span class="muted">Due for review</span><b class="num">${due}</b></div>
+<div class="kv"><span class="muted">Jobs to report back on</span><b class="num">${openMissions().length}</b></div>
 <div class="kv"><span class="muted">Questions about you</span><b>${AI()?'Unlimited':'From his notebook'}</b></div>
 <div class="kv"><span class="muted">Ears</span><b>${earLabel(ear)}</b></div>
 <div class="kv"><span class="muted">Voice</span><b>${esc(voiceName())}</b></div></div></div>
@@ -1130,6 +1260,54 @@ function vModule(m){
 <section><p class="eyebrow">Recall cards · ${cards.length}</p><div class="list" style="margin-top:8px">${cards.map(c=>`<div class="card" style="padding:11px 12px"><p style="font-size:14px;font-weight:600">${esc(c.q)}</p><details style="margin-top:6px"><summary class="small muted">Answer</summary><p class="small" style="margin-top:4px">${esc(c.a)}</p></details><div class="bar" style="margin-top:9px"><i style="width:${Math.round(strength(c.id)*100)}%"></i></div></div>`).join('')}</div></section>`;
 }
 function openModule(id,keep){const m=MOD[id];if(!m)return;sheetMod=id;sheetKind='mod';openSheet('level '+pad(m.n)+' — '+m.title.toLowerCase(),vModule(m),keep)}
+
+/* ---------- MIRROR ---------- */
+let moodSel=new Set();
+function ago(t){const d=now()-t;if(d<3600e3)return Math.max(1,Math.round(d/60e3))+' min ago';if(d<DAY)return Math.round(d/3600e3)+' h ago';return Math.round(d/DAY)+' days ago'}
+function vMirror(){
+  const pats=B.patterns.slice().sort((a,b)=>(b.count||0)-(a.count||0));
+  const open=openMissions(),done=B.missions.filter(m=>m.status==='done');
+  const n=B.moods.length;const concern=now()-(B.core.concernAt||0)<7*DAY;
+  return `<div><p class="eyebrow">Mirror · what keeps happening to you</p><h1 class="dot-h" style="margin-top:6px">Your patterns</h1><p class="small muted" style="margin-top:8px">Ambrose tracks how you feel, spots what repeats, teaches you the tool for it, gives you a job, then checks you actually did it.</p></div>
+${concern?`<div class="card hot"><h3>Talk to someone</h3><p class="small" style="margin-top:6px">${esc(SAFE)}</p></div>`:''}
+<div class="card"><p class="eyebrow">Check in</p><div class="chips" style="flex-wrap:wrap;margin-top:8px">${EMOS.map(e=>`<button class="chip ${moodSel.has(e)?'on':''}" data-act="mood-chip" data-v="${e}">${e}</button>`).join('')}</div>
+<label class="lab" for="mood-int" style="margin-top:12px">How strong <span class="num" id="mood-int-v">5</span>/10</label><input type="range" id="mood-int" min="1" max="10" value="5">
+<label class="lab" for="mood-in" style="margin-top:10px">What's behind it?</label><textarea id="mood-in" placeholder="The landlord's agent talked over me again and I let him…"></textarea>
+<div class="row" style="margin-top:8px">${micBtn('mood-in')}<button class="btn red grow" data-act="mood-save">Log it</button></div></div>
+<div class="card"><p class="eyebrow">Ambrose's read</p><p style="margin-top:8px">${esc(B.core.mirror||(n<4?`He needs at least four check-ins before patterns show. You have ${n}. Drive check-ins and field logs count too.`:'Ready when you are.'))}</p>${AI()?`<button class="btn full" style="margin-top:10px" data-act="find-patterns" ${n<3?'disabled':''}>${S.lastPatternRun?'Look again':'Find my patterns'}</button>${S.lastPatternRun?`<p class="small muted" style="margin-top:6px">Last looked ${ago(S.lastPatternRun)}. He looks again by himself after every few check-ins.</p>`:''}`:'<p class="small muted" style="margin-top:6px">Finding patterns needs the Gemini key.</p>'}</div>
+${pats.length?`<section><p class="eyebrow">What repeats</p><div class="list" style="margin-top:8px">${pats.map(patCard).join('')}</div></section>`:''}
+<section><p class="eyebrow">Your jobs · ${open.length} open</p><div class="list" style="margin-top:8px">${open.length?open.slice().reverse().map(msCard).join(''):'<div class="card"><p class="small muted">No open jobs. Ambrose sets one after every lesson and every pattern he finds, and asks how it went on your next drive.</p></div>'}</div>
+${done.length?`<p class="small muted" style="margin-top:10px">Done ${done.length} · worked ${done.filter(m=>m.result==='worked').length} · partly ${done.filter(m=>m.result==='partly').length} · didn't work ${done.filter(m=>m.result==='didnt').length}</p>`:''}</section>
+<div class="card"><p class="eyebrow">Your emotional map · last 30 days</p>${emoMap()}</div>`;
+}
+function patCard(p){
+  const cs=(p.concepts||[]).map(id=>EMO.find(e=>e.id===id)).filter(Boolean);const mods=(p.modules||[]).filter(id=>MOD[id]);
+  const onList=B.missions.some(m=>m.ref===p.id&&m.status==='open');
+  return `<div class="card ${p.trend==='growing'?'hot':''}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h3>${esc(p.name)}</h3><span class="pill ${p.trend==='easing'?'ok':(p.trend==='growing'||p.trend==='new')?'red':''}" style="flex:none">${esc(p.trend||'steady')} · x${p.count||1}</span></div>
+<div style="margin-top:8px"><div class="kv"><span class="muted">When</span><span style="text-align:right">${esc(p.trigger)}</span></div><div class="kv"><span class="muted">You feel</span><span style="text-align:right">${esc(p.emotion)}</span></div><div class="kv"><span class="muted">You tend to</span><span style="text-align:right">${esc(p.response)}</span></div><div class="kv"><span class="muted">It costs you</span><span style="text-align:right">${esc(p.cost)}</span></div></div>
+${cs.length?`<p class="eyebrow" style="margin-top:12px">The tools</p>${cs.map(c=>`<details class="small" style="margin-top:6px"><summary><b>${esc(c.name)}</b></summary><p class="muted" style="margin-top:4px">${esc(c.what)}</p></details>`).join('')}`:''}
+${mods.length?`<div class="chips" style="margin-top:10px">${mods.map(id=>`<button class="chip" data-mod="${id}">${pad(MOD[id].n)} ${esc(MOD[id].title)}</button>`).join('')}</div>`:''}
+${p.exercise?`<div class="card" style="margin-top:10px;padding:11px"><p class="eyebrow">Exercise</p><p style="margin-top:4px;font-weight:600">${esc(p.exercise.title)}</p><p class="small muted" style="margin-top:2px">${esc(p.exercise.detail)}</p>${onList?'<p class="small" style="margin-top:8px;color:#f0a2a8">On your jobs list.</p>':`<button class="btn sm red" style="margin-top:8px" data-act="pat-ex" data-id="${p.id}">Make it a job</button>`}</div>`:''}
+${(p.evidence||[]).length?`<details class="small" style="margin-top:8px"><summary class="muted">Evidence</summary>${p.evidence.map(e=>`<p class="muted" style="margin-top:4px">${esc(e)}</p>`).join('')}</details>`:''}</div>`;
+}
+function msCard(m){
+  return `<div class="card" style="padding:12px"><p class="small muted mono">${m.src==='pattern'?'From a pattern':'From a lesson'} · set ${ago(m.t)}${m.asks?' · asked '+m.asks+'x':''}</p><p style="font-weight:600;margin-top:4px">${esc(m.title)}</p><p class="small muted" style="margin-top:2px">${esc(m.detail||'')}</p>
+<div class="row wrap" style="margin-top:10px"><button class="btn sm red" data-act="ms-res" data-id="${m.id}" data-r="worked">Did it, worked</button><button class="btn sm" data-act="ms-res" data-id="${m.id}" data-r="partly">Partly</button><button class="btn sm" data-act="ms-res" data-id="${m.id}" data-r="didnt">Didn't work</button><button class="btn sm ghost" data-act="ms-drop" data-id="${m.id}">Drop it</button></div></div>`;
+}
+function emoMap(){
+  const rec=B.moods.filter(m=>m.t>=now()-30*DAY);
+  if(!rec.length)return '<p class="small muted" style="margin-top:8px">Empty so far. Check in above, or let Ambrose ask at the start of a drive.</p>';
+  const cnt={};rec.forEach(m=>(m.emo||[]).forEach(e=>{cnt[e]=(cnt[e]||0)+1}));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6);const mx=top.length?top[0][1]:1;
+  const avg=rec.reduce((a,m)=>a+(m.int||5),0)/rec.length;const ctx={};rec.forEach(m=>{if(m.ctx)ctx[m.ctx]=(ctx[m.ctx]||0)+1});const topCtx=Object.entries(ctx).sort((a,b)=>b[1]-a[1])[0];
+  const td={};rec.forEach(m=>{const k=tod(m.t);td[k]=(td[k]||[]).concat(m.int||5)});const hot=Object.entries(td).map(([k,v])=>[k,v.reduce((a,b)=>a+b,0)/v.length]).sort((a,b)=>b[1]-a[1])[0];
+  return `<div style="margin-top:8px">${top.map(([e,c])=>`<div class="hbar"><span>${esc(e)}</span><div class="bar"><i style="width:${Math.round(100*c/mx)}%"></i></div><span class="num small" style="text-align:right">${c}</span></div>`).join('')}</div><p class="small muted" style="margin-top:8px">${rec.length} check-ins · average intensity ${avg.toFixed(1)}/10${topCtx?' · mostly about '+esc(topCtx[0]):''}${hot&&Object.keys(td).length>1?' · most intense in the '+hot[0]:''}</p>`;
+}
+function kdCard(){
+  const rows=knowDo();const any=B.applied.length;const gap=rows.filter(r=>r.know>0.15).sort((a,b)=>(b.know-b.doit)-(a.know-a.doit))[0];
+  return `<div class="card"><p class="eyebrow">Knowing vs doing</p><p class="small muted" style="margin-top:4px">Red is what you can recall. Green is what you've actually used in real deals and finished jobs in the last 45 days.</p><div style="margin-top:8px">${rows.map(r=>`<div style="padding:6px 0"><div class="row" style="justify-content:space-between;font-size:13px"><span>${r.l}</span><span class="num small muted">${Math.round(r.know*100)} / ${Math.round(r.doit*100)}</span></div><div class="bar" style="margin-top:4px"><i style="width:${Math.round(r.know*100)}%"></i></div><div class="bar" style="margin-top:3px"><i style="width:${Math.round(r.doit*100)}%;background:linear-gradient(90deg,#2f5c48,#6fb393)"></i></div></div>`).join('')}</div>
+<p class="small" style="margin-top:10px">${!any?'Nothing applied yet. Finish a job or log a deal in Ambrose › Field and green starts moving.':gap&&gap.know-gap.doit>0.2?`Biggest gap: ${gap.l}. You know ${Math.round(gap.know*100)}% of it but you've barely used it.`:'Knowing and doing are moving together. Good.'}</p></div>`;
+}
 
 /* ---------- AMBROSE ---------- */
 let subA='interview';
@@ -1182,6 +1360,7 @@ function vPulse(){
   return `<div><p class="eyebrow">Pulse · how you're learning</p><div class="row" style="align-items:flex-end;margin-top:8px"><div class="big-num">${idx}</div><p class="small muted" style="padding-bottom:8px">Synaptic index<br>average mastery across all ${MODULES.length} levels</p></div></div>
 <div class="tiles"><div class="tile"><div class="v">${streak()}</div><div class="l">day streak</div></div><div class="tile"><div class="v">${Math.round(S.agg.mins)}</div><div class="l">minutes with Ambrose</div></div><div class="tile"><div class="v">${known}</div><div class="l">cards held strong</div></div><div class="tile"><div class="v">${dueCards().length}</div><div class="l">due for review</div></div></div>
 <div class="card"><p class="eyebrow">Mastery by domain</p>${radar()}</div>
+${kdCard()}
 <div class="card"><p class="eyebrow">Forgetting forecast · if you stopped today</p>${forecast()}</div>
 <div class="card"><p class="eyebrow">Accuracy by where you are</p><div style="margin-top:6px">${bars(S.agg.mode,[['drive','Driving'],['walk','Walking'],['desk','At a desk']])}</div><p class="eyebrow" style="margin-top:14px">By time of day</p><div style="margin-top:6px">${bars(S.agg.tod,[['morning','Morning'],['afternoon','Afternoon'],['evening','Evening'],['night','Night']])}</div><p class="eyebrow" style="margin-top:14px">By question type</p><div style="margin-top:6px">${bars(S.agg.kind,[['recall','Recall'],['scenario','Scenarios']])}</div></div>
 <div class="card"><p class="eyebrow">What the data says</p><ul class="small" style="margin:8px 0 0;padding-left:18px">${insights().map(x=>`<li style="margin-top:4px">${esc(x)}</li>`).join('')}</ul>${B.core.learning?`<p class="eyebrow" style="margin-top:14px">Ambrose's read</p><p style="margin-top:6px">${esc(B.core.learning)}</p>`:''}</div>`;
@@ -1262,7 +1441,7 @@ let route=(location.hash||'').slice(1);if(!ROUTES.includes(route))route='transit
 function render(){
   const v=$('#view');const keepVals={};v.querySelectorAll('textarea[id],input[id]').forEach(el=>{keepVals[el.id]=el.value});
   const sameRoute=v.dataset.route===route;const st=sameRoute?v.scrollTop:0;
-  v.innerHTML={transit:vTransit,path:vPath,ambrose:vAmbrose,pulse:vPulse}[route]();v.dataset.route=route;
+  v.innerHTML={transit:vTransit,path:vPath,mirror:vMirror,ambrose:vAmbrose,pulse:vPulse}[route]();v.dataset.route=route;
   Object.entries(keepVals).forEach(([id,val])=>{const el=document.getElementById(id);if(el&&!el.value)el.value=val});
   v.scrollTop=st;$('#ttl').textContent='umbra — '+route;
   document.querySelectorAll('[data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===route));
@@ -1314,6 +1493,17 @@ async function act(a,el){
     break}
   case 'reset':if(!resetArmed){resetArmed=true;openSheet('settings',vSettings(),true);break}
     {const key=S.set.key,models=S.set.models;S=DEF_S();D=DEF_D();B=DEF_B();fix();S.set.key=key;S.set.models=models;touch('sdb');resetArmed=false;closeSheet();render();toast('Umbra','Everything wiped. Ambrose has forgotten you. For now.')}break;
+  case 'mood-chip':{const v=el.dataset.v;if(moodSel.has(v))moodSel.delete(v);else if(moodSel.size<3)moodSel.add(v);el.classList.toggle('on',moodSel.has(v));break}
+  case 'mood-save':{const ta=$('#mood-in');const text=(ta&&ta.value.trim())||'';const chips=[...moodSel];const int=+(($('#mood-int')||{}).value||5);
+    if(!text&&!chips.length){toast('Mirror','Pick a feeling or say what happened.');break}
+    el.disabled=true;el.textContent='Ambrose is reading you…';const r=await moodText(text||chips.join(', '),'check-in',chips,int);moodSel=new Set();if(ta)ta.value='';render();
+    if(r.concern===true)toast('Ambrose',SAFE);else if(r.say)toast('Ambrose',r.say);else toast('Mirror','Logged.');break}
+  case 'find-patterns':{el.disabled=true;el.textContent='Ambrose is going through everything…';
+    try{const n=await findPatterns();toast('Mirror',n?`${n} pattern${n>1?'s':''} on file.`:"Nothing repeats clearly yet. Keep checking in.")}catch(e){handleAIErr(e);render()}break}
+  case 'pat-ex':{const p=B.patterns.find(x=>x.id===el.dataset.id);if(p&&p.exercise){addMission({title:p.exercise.title,detail:p.exercise.detail,src:'pattern',ref:p.id,concept:(p.concepts||[])[0]||'',mod:'inner'});render();toast('Job set',"Ambrose will ask you how it went on your next drive.")}break}
+  case 'ms-res':{const m=B.missions.find(x=>x.id===el.dataset.id);if(m){closeMission(m,el.dataset.r,'');render();toast('Noted',el.dataset.r==='worked'?"Good. That's doing, not just knowing.":'Logged. Ambrose will adjust.')}break}
+  case 'ms-drop':{const m=B.missions.find(x=>x.id===el.dataset.id);if(m){m.status='skipped';m.done=now();touch('b');render()}break}
+
   case 'db-grade':{const c=cardById(el.dataset.id);const p=S.pending.find(x=>x.id===el.dataset.id);if(c)gradeCard(c,+el.dataset.s,p?p.mode:'drive');render();break}
   case 'iq-send':{const ta=$('#iq-ans');const ans=ta&&ta.value.trim();if(!ans){toast('Ambrose','Say something first. Anything.');break}
     const q=curIQ();el.disabled=true;el.textContent='Filing…';rememberAsked(q);const r=await absorbText(q,ans,'interview');
@@ -1348,9 +1538,16 @@ async function act(a,el){
   }
 }
 async function decodeField(f){
-  try{const text=await Gem.chat(PERSONA(),[{role:'user',content:nm(`${ctxBlock(20)}\n\nJoe logged this from the field (a real viewing, call or negotiation):\n"${f.text}"\n\nAs Ambrose, decode it with the psychology he's studying: what was probably going on in the other person, what Joe did well, and one concrete line he could say next time. Under 140 words, plain text, no lists. If it reveals something lasting about Joe, add a final separate line: NOTE: <one short third-person fact>.`)}]);
-    f.an=text.split('\n').filter(l=>!/^\s*NOTE:/i.test(l)).join('\n').trim();addFacts(text.split('\n').filter(l=>/^\s*NOTE:/i.test(l)),'field');touch('b')}
-  catch(e){handleAIErr(e)}render();
+  try{
+    const open=openMissions();
+    const r=await Gem.json(nm(`${ctxBlock(20)}\n\nOpen jobs you set him:\n${open.map(m=>m.id+': '+m.title+': '+m.detail).join('\n')||'none'}\n\nJoe logged this from the field (a real viewing, call or negotiation):\n"${f.text}"\n\nDecode it with the psychology he's studying. Reply with only JSON: {"analysis": "under 140 words, plain text, in character: what was probably going on in the other person, what Joe did well, and one concrete line he could say next time", "applied": [{"technique": "short name of any technique he used", "module": "module id or empty", "outcome": "worked, partly, didnt or unknown"}], "feelings": ["Joe's own emotions in the moment, lowercase; empty if none"], "intensity": 1 to 10, "trigger": "what set him off, or empty", "done": ["ids of open jobs this log shows he completed"], "note": "one lasting fact about Joe, or empty"}`),{tier:'main'});
+    f.an=String(r.analysis||'');f.feel=(Array.isArray(r.feelings)?r.feelings:[]).map(x=>String(x).toLowerCase()).slice(0,3);
+    (Array.isArray(r.applied)?r.applied:[]).forEach(a=>{if(a&&a.technique)B.applied.push({id:uid(),t:now(),mod:MOD[a.module]?a.module:'',concept:'',tech:String(a.technique),out:['worked','partly','didnt'].includes(a.outcome)?a.outcome:'unknown',src:'field'})});
+    (Array.isArray(r.done)?r.done:[]).forEach(id=>{const m=B.missions.find(x=>x.id===id&&x.status==='open');if(m)closeMission(m,'worked','From a field log')});
+    if(f.feel.length){B.moods.push({id:uid(),t:f.t,text:f.text.slice(0,600),src:'field',emo:f.feel,int:clamp(Math.round(+r.intensity||5),1,10),val:0,trig:String(r.trigger||''),ctx:'deal',resp:''});S.moodN=(S.moodN||0)+1;maybePatterns()}
+    if(r.note)addFacts([r.note],'field');touch('sb');
+  }catch(e){handleAIErr(e)}
+  render();
 }
 
 /* ================= EVENTS ================= */
@@ -1378,6 +1575,7 @@ document.addEventListener('input',e=>{
   if(id==='set-rate'){S.set.rate=+e.target.value;touch('s');lbl().textContent=S.set.rate.toFixed(2)}
   if(id==='set-pitch'){S.set.pitch=+e.target.value;touch('s');lbl().textContent=S.set.pitch.toFixed(2)}
   if(id==='set-think'){S.set.think=+e.target.value;touch('s');lbl().textContent=S.set.think+'s'}
+  if(id==='mood-int'){const v=$('#mood-int-v');if(v)v.textContent=e.target.value}
   if(id==='set-name'){S.name=e.target.value.trim().slice(0,30)||'Joe';touch('s');clearTimeout(window.__nmT);window.__nmT=setTimeout(render,600)}
 });
 document.addEventListener('change',e=>{if(e.target.id==='set-dv'){S.set.dv=e.target.value;touch('s')}});
