@@ -1,5 +1,5 @@
 /* Plot works offline: the app's own files are kept on the device. Notes are never here: they live in IndexedDB. */
-const CACHE = "plot-1.0.0";
+const CACHE = "plot-1.0.1";
 const FILES = ["./", "index.html", "plot.css", "plot.js", "manifest.webmanifest", "fonts/space-grotesk.woff2", "icons/favicon.svg", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png"];
 self.addEventListener("message", e => { if (e.data === "skip") self.skipWaiting(); });
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); });

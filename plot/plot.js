@@ -3,8 +3,7 @@
    Everything stays on this device: notes are kept in this browser's own storage (IndexedDB) and nothing is ever sent anywhere.
    One set of notes, three ways to look at them: Notes (folders, a list by date, the note beside it), Cards (colours, pinned first,
    ticked on the card) and Board (an endless blueprint: drag notes about, join them with arrows, group them inside red-line frames). */
-const VERSION = "1.0.0";
-const LARO_ORIGIN = "https://laro.rorymack.workers.dev";   /* the only place notes may be moved in from (a one-time move) */
+const VERSION = "1.0.1";
 const KEEP_DAYS = 30;
 const COLORS = [["", "Paper"], ["yellow", "Yellow"], ["green", "Green"], ["blue", "Blue"], ["pink", "Pink"], ["sand", "Sand"], ["lilac", "Lilac"], ["clay", "Clay"]];
 const VIEWS = [["notes", "Notes", "list"], ["cards", "Cards", "cards"], ["board", "Board", "board"]];
@@ -960,7 +959,7 @@ function applyTheme() {
   const m = $('meta[name="theme-color"]'); if (m) m.setAttribute("content", dark ? "#0E1828" : "#F3F6FA");
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
-function openSettings() {
+function openSettings(opt = {}) {
   const seg = h("div", { class: "switch wide", role: "radiogroup", "aria-label": "Appearance" }, [["system", "Match this device"], ["light", "Light"], ["dark", "Dark"]].map(([k, l]) =>
     h("button", { type: "button", role: "radio", "aria-checked": String((P.set.theme || "system") === k), class: (P.set.theme || "system") === k ? "on" : "", onclick: async () => { P.set.theme = k; applyTheme(); await saveSettings(); L.close(); openSettings(); } }, h("span", null, l))));
   const file = h("input", { type: "file", accept: ".json,application/json", hidden: true, onchange: e => { const f = e.target.files[0]; if (f) restoreFrom(f).then(() => L.close()); } });
@@ -969,6 +968,9 @@ function openSettings() {
   const box = h("div", { class: "dialog", role: "dialog", "aria-modal": "true", "aria-label": "Settings" },
     h("div", { class: "dialog-h" }, h("h2", null, "Settings"), h("button", { type: "button", class: "ib", "aria-label": "Close", onclick: () => L.close() }, icon("x"))),
     h("section", null, h("h3", null, "Appearance"), seg),
+    opt.restore ? h("section", { class: "callout" }, h("h3", null, "Bring your notes in"),
+      h("p", null, "Choose Restore a back-up and pick the file Laro downloaded, called Notes from Laro for Plot."),
+      h("div", { class: "row-btns" }, h("button", { type: "button", class: "btn primary restore-now", onclick: () => file.click() }, icon("upload"), "Restore a back-up"))) : null,
     h("section", null, h("h3", null, "Where your notes are"),
       h("p", null, `${plural(count, "note")}, saved in this browser on this device. Plot never sends them anywhere, so they don't appear on your other devices, and clearing this browser's data would remove them. Keep a back-up now and then.`),
       h("div", { class: "row-btns" },
@@ -979,6 +981,7 @@ function openSettings() {
         : h("p", null, "Use your browser's install button in the address bar, or its menu: Apps, then Install Plot. On an iPhone: Share, then Add to Home Screen.")),
     h("p", { class: "fine" }, `Plot ${VERSION}. Works offline once opened.`));
   const L = layer(box);
+  if (opt.restore) setTimeout(() => { const b = box.querySelector(".restore-now"); if (b) b.focus(); }, 60);
 }
 function backup() {
   const data = { app: "Plot", version: 1, at: now(), folders: P.folders, notes: [...P.notes.values()].map(n => { const o = Object.assign({}, n); delete o._saved; return o; }) };
@@ -1005,19 +1008,11 @@ async function install() { const e = P.bip; if (!e) return; P.bip = null; e.prom
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); P.bip = e; if (P.ready) render(); });
 addEventListener("appinstalled", () => { P.bip = null; toast("Plot is installed. Find it on your taskbar or home screen."); if (P.ready) render(); });
 
-/* ---- a one-time move from Laro: Laro opens Plot with #from-laro and hands the notes over, origin to origin */
-function fromLaro() {
-  if (location.hash !== "#from-laro" || !window.opener) return;
+/* ---- notes brought over from Laro's old My notes: Laro downloads them as a back-up file and opens Plot with #restore */
+function restoreHint() {
+  if (location.hash !== "#restore") return;
   history.replaceState(null, "", location.pathname + location.search);
-  addEventListener("message", async e => {
-    if (e.origin !== LARO_ORIGIN || !e.data || e.data.type !== "plot-notes" || !Array.isArray(e.data.notes)) return;
-    let added = 0;
-    for (const raw of e.data.notes.slice(0, 5000)) { const n = cleanNote(raw); if (P.notes.has(n.id)) continue; await save(n); added++; }
-    render();
-    try { e.source.postMessage({ type: "plot-done", n: added, ids: e.data.notes.map(x => x && x.id).filter(Boolean) }, LARO_ORIGIN); } catch (x) { }
-    toast(added ? `Moved ${plural(added, "note")} over from Laro` : "Your Laro notes were already here");
-  });
-  try { window.opener.postMessage({ type: "plot-ready" }, LARO_ORIGIN); } catch (e) { }
+  openSettings({ restore: true });
 }
 
 /* ---- keys */
@@ -1051,11 +1046,12 @@ async function start() {
   for (const n of [...P.notes.values()]) if (n.deleted && Date.parse(n.deleted) < cut) await destroy(n.id);
   P.ready = true; P.wasNarrow = innerWidth <= 820;
   render();
-  fromLaro();
+  restoreHint();
   if ("serviceWorker" in navigator && (location.protocol === "https:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
     navigator.serviceWorker.register("sw.js").then(reg => {
-      reg.addEventListener("updatefound", () => { const w = reg.installing; if (w) w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) toast("A new version of Plot is ready", "Update", () => { flush().then(() => w.postMessage("skip")); }, 20000); }); });
-      let swapped = false; navigator.serviceWorker.addEventListener("controllerchange", () => { if (swapped) return; swapped = true; location.reload(); });
+      reg.addEventListener("updatefound", () => { const w = reg.installing; if (w) w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) toast("A new version of Plot is ready", "Update", () => { P.updating = true; flush().then(() => w.postMessage("skip")); }, 20000); }); });
+      /* only after Update is pressed: the very first visit also changes controller, and mustn't reload */
+      navigator.serviceWorker.addEventListener("controllerchange", () => { if (!P.updating) return; P.updating = false; location.reload(); });
     }).catch(() => { });
   }
 }
