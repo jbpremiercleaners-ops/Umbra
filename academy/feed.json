@@ -1,0 +1,57 @@
+{
+ "about": "Daily lessons for Laro's Academy: general UK commercial property knowledge, nothing private.",
+ "lessons": [
+  {
+   "id": "2026-11-24-assignment-aga",
+   "date": "2026-11-24",
+   "t": "Assignments and AGAs",
+   "sub": "When a tenant wants to hand the lease on",
+   "why": "Tenants selling a business almost always want to assign the lease. Landlords then ask who will stand behind the new tenant. Knowing how an assignment works lets you keep a sale of a business, or an investment sale, moving.",
+   "points": [
+    "Assignment transfers the whole lease to a new tenant for the rest of the term; subletting creates a new, shorter lease underneath it.",
+    "Most leases need the landlord's consent to assign, which can't be unreasonably withheld, but the lease can list conditions the landlord may impose.",
+    "For leases granted since 1996, the Landlord and Tenant (Covenants) Act 1995 releases the outgoing tenant on assignment, unless it signs an authorised guarantee agreement (AGA).",
+    "An AGA makes the outgoing tenant guarantee the incoming tenant only: once that tenant assigns again, the AGA falls away.",
+    "The landlord's consent comes in a licence to assign, often with a new rent deposit deed and a guarantor for the incoming tenant.",
+    "On an investment sale, the buyer's solicitor will ask for every licence, AGA and deposit deed, so collect them early."
+   ],
+   "say": [
+    "\"The landlord will consent, but they'll want the current tenant to sign an AGA, so they stand behind the new tenant until it hands the lease on.\"",
+    "\"Have you got the licence to assign and the deposit deed from when the lease was last passed on? The buyer's solicitor will want them.\""
+   ],
+   "ask": [
+    "Is the lease being assigned with the business, or will the new tenant take a new lease?",
+    "Will the outgoing tenant sign an AGA?",
+    "Is there a rent deposit, and will it move across to the new tenant?"
+   ],
+   "cards": [
+    [
+     "Assignment or subletting: which transfers the whole lease?",
+     "Assignment. Subletting creates a new lease underneath."
+    ],
+    [
+     "What does an AGA do?",
+     "The outgoing tenant guarantees the incoming tenant's obligations."
+    ],
+    [
+     "Does an AGA cover the next tenant after that?",
+     "No: only the immediate assignee."
+    ],
+    [
+     "Which Act releases tenants on assignment for leases granted since 1996?",
+     "The Landlord and Tenant (Covenants) Act 1995."
+    ],
+    [
+     "What document gives the landlord's consent to assign?",
+     "A licence to assign."
+    ]
+   ],
+   "sources": [
+    {
+     "t": "Landlord and Tenant (Covenants) Act 1995",
+     "u": "https://www.legislation.gov.uk/ukpga/1995/30/contents"
+    }
+   ]
+  }
+ ]
+}
