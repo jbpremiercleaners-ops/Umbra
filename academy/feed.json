@@ -52,6 +52,67 @@
      "u": "https://www.legislation.gov.uk/ukpga/1995/30/contents"
     }
    ]
+  },
+  {
+   "id": "2026-11-25-break-clauses",
+   "date": "2026-11-25",
+   "t": "Break clauses: getting out cleanly",
+   "sub": "Why a tenant's break can fail on a technicality",
+   "why": "A break clause lets a tenant end a lease early, so it shapes what a tenant will pay and what an investor will pay. Breaks fail on small slips, and a failed break leaves the tenant on the hook for years. Knowing the traps lets you warn clients early and keep deals honest.",
+   "points": [
+    "Courts apply strict compliance: every condition must be met exactly as the lease says, and near enough is not good enough.",
+    "Time is of the essence: a break notice served even one day late is ineffective, so check the notice period, form and method of service in the lease itself.",
+    "Typical conditions are serving notice, paying rent and other sums due up to the break date, and giving vacant possession; even a small rent shortfall was fatal in Avocet v Merol (2011), so pay every sum demanded and argue afterwards.",
+    "Vacant possession means leaving nothing behind: in NYK Logistics v Ibrend Estates (2011) old racking left in the unit defeated the break.",
+    "In Marks and Spencer v BNP Paribas (2015) the Supreme Court refused to imply a refund of rent paid in advance for the period after the break date, so a tenant needs an express apportionment clause or a break date on the last day of a rent quarter.",
+    "Wording matters: \"no breach\" conditions are risky because most leases carry minor breaches, while \"material compliance\" allows minor ones; the RICS leasing code recommends limiting conditions to paying the main rent and giving up occupation."
+   ],
+   "say": [
+    "\"Before you serve the break notice, let's get your solicitor to list every condition, because the courts won't forgive even a small slip.\"",
+    "\"If your break date falls mid-quarter, you may pay the whole quarter and not get any of it back unless the lease says so, so let's push for a refund clause now.\""
+   ],
+   "ask": [
+    "\"When is the break date, and how much notice does the lease need?\"",
+    "\"What conditions are attached: rent paid, vacant possession, no breaches?\"",
+    "\"Does the lease refund rent paid in advance for the time after the break?\"",
+    "\"What will be left in the unit, such as racking, partitions or fit-out?\""
+   ],
+   "cards": [
+    [
+     "How strictly do courts read break conditions?",
+     "Strictly: every condition must be met exactly; near compliance fails."
+    ],
+    [
+     "What happens to a break notice served one day late?",
+     "It is ineffective, because time is of the essence."
+    ],
+    [
+     "What defeated the break in NYK Logistics v Ibrend?",
+     "Old racking left in the unit meant no vacant possession."
+    ],
+    [
+     "What did the Supreme Court decide in M&S v BNP Paribas (2015)?",
+     "No implied refund of rent paid in advance for the period after the break; it needs an express clause."
+    ],
+    [
+     "What break conditions does the RICS leasing code recommend?",
+     "Only paying the main rent and giving up occupation."
+    ]
+   ],
+   "sources": [
+    {
+     "t": "Katten: strict compliance and hidden traps in commercial lease breaks",
+     "u": "https://katten.com/insights/advisories/break-free-not-so-fast-strict-compliance-and-the-hidden-traps-in-commercial-lease-breaks"
+    },
+    {
+     "t": "CMS: Landlord triumphs in the apportionment bout of the break battles",
+     "u": "https://cms.law/en/gbr/legal-updates/Landlord-triumphs-in-the-apportionment-bout-of-the-break-battles"
+    },
+    {
+     "t": "Kingsley Napley: key considerations when exercising a break clause",
+     "u": "https://www.kingsleynapley.co.uk/insights/blogs/real-estate-law-blog/key-considerations-when-exercising-a-break-clause"
+    }
+   ]
   }
  ]
 }
