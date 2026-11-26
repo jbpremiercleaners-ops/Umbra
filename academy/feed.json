@@ -113,6 +113,67 @@
      "u": "https://www.kingsleynapley.co.uk/insights/blogs/real-estate-law-blog/key-considerations-when-exercising-a-break-clause"
     }
    ]
+  },
+  {
+   "id": "2026-11-26-net-initial-yield-buyers-costs",
+   "date": "2026-11-26",
+   "t": "Net initial yield and buyer's costs",
+   "sub": "Why the yield an investor quotes is lower than rent over price",
+   "why": "Investors price shops, offices and units by yield, and they work it out on the full cost of buying, not just the price. If you quote rent divided by price, your yield looks better than the buyer's own sums and you lose credibility. Knowing how buyer's costs move the figure helps you set asking prices and handle offers.",
+   "points": [
+    "Net initial yield (NIY) is a property's net annual income as a percentage of the full cost of buying it: net income divided by (price plus buyer's costs), times 100.",
+    "Buyer's costs usually include the purchase tax, agent and legal fees, and VAT on those fees; in England the purchase tax is Stamp Duty Land Tax (SDLT), while Wales and Scotland have their own taxes.",
+    "For a non-residential freehold in England, SDLT is 0% up to £150,000, 2% on the portion from £150,001 to £250,000, and 5% above £250,000; so £275,000 pays £3,250 and £400,000 pays £9,500.",
+    "A worked example: £65,000 net income on a £1,000,000 price is 6.5% on price alone, but with about £60,000 of buyer's costs the NIY is £65,000 divided by £1,060,000, or 6.1%.",
+    "Turn it round to price a deal: capital value is income divided by the yield; an office let at £70,000 a year at an 8% yield is worth about £875,000 before allowing for costs.",
+    "Gross yield is rent over cost with nothing deducted; yields generally fall when the market is buoyant and rise when it is falling, so a lower yield means a higher price."
+   ],
+   "say": [
+    "\"At that price it shows about 6.5% on the rent, and nearer 6.1% once a buyer adds stamp duty and fees, so that's the figure investors will compare it on.\"",
+    "\"If you want a buyer to see a 7% net initial yield, we have to price it net of their costs, not just rent over price.\""
+   ],
+   "ask": [
+    "\"What net yield are you looking to achieve after your costs?\"",
+    "\"Is the rent you've quoted the net income, or are there costs the landlord pays out of it?\"",
+    "\"Are you buying in your own name, a company or a pension scheme, and will VAT be charged on the price?\"",
+    "\"Have your solicitor and lender given you a figure for fees, so we can work out your all-in cost?\""
+   ],
+   "cards": [
+    [
+     "What is the formula for net initial yield?",
+     "Net annual income divided by (price plus buyer's costs), times 100."
+    ],
+    [
+     "What do buyer's costs usually include?",
+     "The purchase tax (SDLT in England), agent and legal fees, and VAT on those fees."
+    ],
+    [
+     "What are the non-residential SDLT bands in England?",
+     "0% up to £150,000, 2% from £150,001 to £250,000, 5% above £250,000."
+    ],
+    [
+     "£65,000 income, £1,000,000 price, £60,000 costs: what NIY?",
+     "6.1% (6.5% on price alone)."
+    ],
+    [
+     "An office let at £70,000 a year at an 8% yield is worth about?",
+     "£875,000: income divided by the yield."
+    ]
+   ],
+   "sources": [
+    {
+     "t": "GOV.UK: Stamp Duty Land Tax, non-residential and mixed rates",
+     "u": "https://www.gov.uk/stamp-duty-land-tax/nonresidential-and-mixed-rates"
+    },
+    {
+     "t": "LoopNet UK: Understanding net initial yield (NIY)",
+     "u": "https://www.loopnet.co.uk/commercial-property-guides/investing/understanding-net-initial-yield-niy-for-commercial-property-investments"
+    },
+    {
+     "t": "Designing Buildings Wiki: Property yield",
+     "u": "https://www.designingbuildings.co.uk/wiki/Property_yield"
+    }
+   ]
   }
  ]
 }
