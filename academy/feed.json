@@ -123,9 +123,9 @@
    "points": [
     "Net initial yield (NIY) is a property's net annual income as a percentage of the full cost of buying it: net income divided by (price plus buyer's costs), times 100.",
     "Buyer's costs usually include the purchase tax, agent and legal fees, and VAT on those fees; in England the purchase tax is Stamp Duty Land Tax (SDLT), while Wales and Scotland have their own taxes.",
-    "For a non-residential freehold in England, SDLT is 0% up to £150,000, 2% on the portion from £150,001 to £250,000, and 5% above £250,000; so £275,000 pays £3,250 and £400,000 pays £9,500.",
-    "A worked example: £65,000 net income on a £1,000,000 price is 6.5% on price alone, but with about £60,000 of buyer's costs the NIY is £65,000 divided by £1,060,000, or 6.1%.",
-    "Turn it round to price a deal: capital value is income divided by the yield; an office let at £70,000 a year at an 8% yield is worth about £875,000 before allowing for costs.",
+    "For a non-residential freehold in England, SDLT is 0% up to \u00a3150,000, 2% on the portion from \u00a3150,001 to \u00a3250,000, and 5% above \u00a3250,000; so \u00a3275,000 pays \u00a33,250 and \u00a3400,000 pays \u00a39,500.",
+    "A worked example: \u00a365,000 net income on a \u00a31,000,000 price is 6.5% on price alone, but with about \u00a360,000 of buyer's costs the NIY is \u00a365,000 divided by \u00a31,060,000, or 6.1%.",
+    "Turn it round to price a deal: capital value is income divided by the yield; an office let at \u00a370,000 a year at an 8% yield is worth about \u00a3875,000 before allowing for costs.",
     "Gross yield is rent over cost with nothing deducted; yields generally fall when the market is buoyant and rise when it is falling, so a lower yield means a higher price."
    ],
    "say": [
@@ -149,15 +149,15 @@
     ],
     [
      "What are the non-residential SDLT bands in England?",
-     "0% up to £150,000, 2% from £150,001 to £250,000, 5% above £250,000."
+     "0% up to \u00a3150,000, 2% from \u00a3150,001 to \u00a3250,000, 5% above \u00a3250,000."
     ],
     [
-     "£65,000 income, £1,000,000 price, £60,000 costs: what NIY?",
+     "\u00a365,000 income, \u00a31,000,000 price, \u00a360,000 costs: what NIY?",
      "6.1% (6.5% on price alone)."
     ],
     [
-     "An office let at £70,000 a year at an 8% yield is worth about?",
-     "£875,000: income divided by the yield."
+     "An office let at \u00a370,000 a year at an 8% yield is worth about?",
+     "\u00a3875,000: income divided by the yield."
     ]
    ],
    "sources": [
@@ -172,6 +172,59 @@
     {
      "t": "Designing Buildings Wiki: Property yield",
      "u": "https://www.designingbuildings.co.uk/wiki/Property_yield"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-27-small-unit-enquiry-and-rates-relief",
+   "date": "2026-11-27",
+   "t": "A small unit enquiry, step by step",
+   "sub": "A made-up call about a workshop unit, where business rates relief decides the deal",
+   "why": "Small occupiers often judge a unit on rent alone and get a shock when the rates bill arrives. If you can explain small business rate relief on the first call, you qualify them properly and stop deals falling over later. This made-up scenario shows what to ask and say at each step.",
+   "points": [
+    "The call (made up): a sole trader runs a van repair business from a unit in Fenton and rings about a 1,200 sq ft workshop in Longton, asking rent \u00a37,800 a year, rateable value \u00a36,500. First find out why they are moving and when, before talking price.",
+    "Ask early whether they will keep their current unit. Small business rate relief is for a business that uses only one property, so a second unit changes the sums.",
+    "On GOV.UK, a business using one property with a rateable value of \u00a312,000 or less pays no business rates. From \u00a312,001 to \u00a315,000 the relief goes down gradually from 100% to 0%: \u00a313,500 gets 50% off and \u00a314,000 gets 33% off.",
+    "If they take a second property, relief on the main property continues for 36 months where the second property was taken on or after 27 November 2025 (12 months if before). After that it continues only if no other property has a rateable value above \u00a32,899 and the total of all of them is under \u00a320,000 (\u00a328,000 in London).",
+    "Relief is not automatic in practice: the occupier contacts the local council to check eligibility and get it, and must tell the council when circumstances change, such as taking another property. For 2026/27 the standard multiplier is 48p and the small business multiplier is 43.2p, for rateable values below \u00a351,000.",
+    "Close for the next step, not the deal: book a viewing, and agree the main terms you will put in heads of terms (rent, length of lease, any break, deposit or guarantee, repairs, use and whether the lease is inside or outside the 1954 Act renewal rights). Tell them the council, not you, confirms their rates."
+   ],
+   "say": [
+    "\"If this is the only unit your business uses, at a rateable value of \u00a36,500 you may well pay no rates at all, but the council confirms that, so it's worth a quick call to them.\"",
+    "\"Are you keeping your current unit? If so, the relief rules change, so let's check the figures before you commit.\""
+   ],
+   "ask": [
+    "\"Why are you moving, and when do you need to be in?\"",
+    "\"Will you keep your current premises, or hand them back?\"",
+    "\"What do you need inside: eaves height, a roller shutter, power, parking for vans?\"",
+    "\"How long a lease are you thinking of, and would you want a break clause?\""
+   ],
+   "cards": [
+    [
+     "Up to what rateable value is there no business rates to pay under small business rate relief?",
+     "\u00a312,000 or less, if it is the only property the business uses."
+    ],
+    [
+     "Over what range does the relief taper from 100% to 0%?",
+     "Rateable values from \u00a312,001 to \u00a315,000."
+    ],
+    [
+     "How much relief does a rateable value of \u00a313,500 get?",
+     "50% off the bill."
+    ],
+    [
+     "How long does main-property relief continue after taking a second property on or after 27 November 2025?",
+     "36 months (12 months if the second property was taken before that date)."
+    ],
+    [
+     "What are the 2026/27 multipliers?",
+     "48p standard and 43.2p small business, for rateable values below \u00a351,000."
+    ]
+   ],
+   "sources": [
+    {
+     "t": "Small business rate relief (GOV.UK)",
+     "u": "https://www.gov.uk/business-rates-relief/small-business-rate-relief"
     }
    ]
   }
